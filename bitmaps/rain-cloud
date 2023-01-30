@@ -1,0 +1,53 @@
+# uses the flag to stretch horizontally
+
+Seem to be more than 8x8 - it lines up 8x8 if it's over a standard building, yet it seems to have more rows of pixels
+
+#frame 1
+
+....X...
+.XXXXXX.
+XXXXXXXX
+.XXXXXX.
+...X....
+....X.X.
+........
+..X..X..
+........
+.....X..
+.X....X.
+X..X...X
+.X...X..
+
+========
+
+#frame 2
+....X...
+.XXXXXX.
+XXXXXXXX
+.XXXXXX.
+...X....
+.X...X.X
+........
+....X.X.
+..X..X..
+........ <== maybe no blank here
+.....X..
+.X....X.
+X..X....
+
+#frame 3 - might've bungled this one quite a bit - it gets hard to stare at for long
+....X...
+.XXXXXX.
+XXXXXXXX
+.XXXXXX.
+...X....
+.....X..
+.X......
+X..X..X.
+.......X
+.X...X..
+........
+..X.X.X.
+.....X..
+
+#probably at least another frame or two
