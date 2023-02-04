@@ -1,4 +1,4 @@
-    'color constants
+ 'Intellivision system color constants
     CONST BLACK = 0
     CONST BLUE = 1
     CONST RED = 2

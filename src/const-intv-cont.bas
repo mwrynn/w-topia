@@ -1,4 +1,4 @@
-    'controller constants
+'Intellivision system controller constants
     CONST UP               = $04
     CONST DOWN             = $01
     CONST LEFT             = $08
