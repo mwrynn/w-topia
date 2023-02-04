@@ -2,6 +2,7 @@
     INCLUDE "const-intv-color.bas"
     INCLUDE "const-intv-sprite.bas"
     INCLUDE "const-intv-cont.bas"
+    INCLUDE "const-intv-card.bas"
     
     'player 1 cursor constants
     CONST P1_CUR_STARTING_X = 20
@@ -14,10 +15,6 @@
     'general cursor constants
     CONST CUR_MOVE_THRESHOLD = 6 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
     
-    'intv card constants
-    CONST CARD_BASELINE = $0800
-    CONST CARD_MULT = 8
-
     'game card constants
     CONST CARD_NUM_CURSOR = 0
 
