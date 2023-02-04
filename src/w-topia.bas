@@ -21,9 +21,9 @@
 main:
     GOSUB init
     GOTO game_loop
-        
-INCLUDE "init.bas"
 
+INCLUDE "init.bas"
+    
 game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
     SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
@@ -43,4 +43,4 @@ game_loop:
 
 INCLUDE "move-cursor.bas"
 INCLUDE "bitmap.bas"
-INCLUDE "cur-move-data.bas"
+INCLUDE "cursor-move-data.bas"
