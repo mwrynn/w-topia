@@ -104,6 +104,10 @@ init_cursor:    PROCEDURE
     p2_cur_y_move_points = 0
     CONST CUR_X_PARAMS = X_NO_INTERACT + X_VISIBLE + X_NORMAL_SIZE
     #p1_cur_f = CARD_BASELINE + p1_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
+
+    'to avoid using a scarce 16-bit int just for high bit.
+    '($1000 AND p1_color_high_bit) in the sprite call doesn't work
+    'maybe because a 16-bit int AND an 8-bit int doesn't result in a 16-bit int?
     IF p1_color_high_bit = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND p1_color_high_bit) doesn't work
         #p1_cur_f = #p1_cur_f + $1000
     END IF
