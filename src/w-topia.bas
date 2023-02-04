@@ -67,51 +67,42 @@
     CONST DOWN_LEFT_LEFT   = $09
     CONST DOWN_DOWN_RIGHT  = $03
     CONST DOWN_RIGHT_RIGHT = $12
-    
-init:
+
+main:
+    GOSUB init
+    GOTO game_loop
+        
+init:   PROCEDURE
+    'init graphics
     CLS
     MODE 0, BLUE, TAN, BLUE, TAN
     WAIT
     DEFINE CARD_NUM_CURSOR, 1, cursor_bitmap 'define cursor as card 0; 1 means load just 1 card (can do multiple)
     WAIT
+
+    GOSUB init_player_colors
+    GOSUB init_cursor
+    
+    SIGNED cont_input
+END
+    
+init_cursor:    PROCEDURE
     p_cur_x = 0 'used in procedure
     p_cur_y = 0 'used in procedure
     p1_cur_x = P1_CUR_STARTING_X
     p1_cur_y = P1_CUR_STARTING_Y
     p2_cur_x = P2_CUR_STARTING_X
     p2_cur_y = P2_CUR_STARTING_Y
-    p1_color = DARK_GREEN
-    p2_color = RED
-
-    IF p1_color > $7 THEN '7 is 111 so anything greater than that requires the high bit to be set in call to SPRITE
-        p1_color_high_bit = 1
-        p1_color_low_bits = p1_color AND $7
-    ELSE
-        p1_color_high_bit = 0
-        p1_color_low_bits = p1_color
-    END IF
-
-    IF p2_color	> 7 THEN
-        p2_color_high_bit = 1
-        p2_color_low_bits = p2_color AND $7
-    ELSE
-        p2_color_high_bit = 0
-        p2_color_low_bits = p2_color
-    END	IF
-
-    SIGNED p_cur_x_move_points, p_cur_y_move_points   'used in procedure
-    SIGNED p1_cur_x_move_points, p1_cur_y_move_points 
+    SIGNED p_cur_x_move_points, p_cur_y_move_points   'for procedure call; maybe make generic arg1 etc.
+    SIGNED p1_cur_x_move_points, p1_cur_y_move_points
     SIGNED p2_cur_x_move_points, p2_cur_y_move_points
-    
-    p_cur_x_move_points = 0 
-    p_cur_y_move_points = 0 
+    p_cur_x_move_points = 0 'for procedure call; maybe make generic arg1, etc.
+    p_cur_y_move_points = 0 'for procedure call; maybe make generic arg1, etc.
     p1_cur_x_move_points = 0
     p1_cur_y_move_points = 0
     p2_cur_x_move_points = 0
     p2_cur_y_move_points = 0
-
-    SIGNED curr_data
-
+    CONST CUR_X_PARAMS = X_NO_INTERACT + X_VISIBLE + X_NORMAL_SIZE
     #p1_cur_f = CARD_BASELINE + p1_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
     IF p1_color_high_bit = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND p1_color_high_bit) doesn't work
         #p1_cur_f = #p1_cur_f + $1000
@@ -119,13 +110,33 @@ init:
 
     #p2_cur_f = CARD_BASELINE + p2_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
     IF p2_color_high_bit = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND p2_color_high_bit) doesn't work
-      	#p2_cur_f = #p2_cur_f +	$1000
-    END	IF
+        #p2_cur_f = #p2_cur_f + $1000
+    END IF
+END
 
-    CONST CUR_X_PARAMS = X_NO_INTERACT + X_VISIBLE + X_NORMAL_SIZE
+'set up color data including high and low bits for both players; used in SPRITE call
+init_player_colors: PROCEDURE
+    p1_color = DARK_GREEN 'the intention is eventually to allow user input to choose player colors
+    p2_color = RED
 
-    
-main_loop:
+    IF p1_color > $7 THEN '$7 is 111 in binary, so anything greater requires the high bit to be set in call to SPRITE
+        p1_color_high_bit = 1
+        p1_color_low_bits = p1_color AND $7
+    ELSE
+        p1_color_high_bit = 0
+        p1_color_low_bits = p1_color
+    END IF
+
+    IF p2_color > 7 THEN
+        p2_color_high_bit = 1
+        p2_color_low_bits = p2_color AND $7
+    ELSE
+        p2_color_high_bit = 0
+        p2_color_low_bits = p2_color
+    END IF
+END
+
+game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
     SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
 
@@ -140,13 +151,13 @@ main_loop:
     GOSUB p2_finish_move_cursor
     
     WAIT
-    GOTO main_loop
+    GOTO game_loop
 
 move_cursor:   PROCEDURE
-    curr_data = direction_offset_x(c_input AND $1F)
-    p_cur_x_move_points = p_cur_x_move_points + curr_data
-    curr_data = direction_offset_y(c_input AND $1F)
-    p_cur_y_move_points = p_cur_y_move_points + curr_data
+    cont_input = direction_offset_x(c_input AND $1F)
+    p_cur_x_move_points = p_cur_x_move_points + cont_input
+    cont_input = direction_offset_y(c_input AND $1F)
+    p_cur_y_move_points = p_cur_y_move_points + cont_input
 
     IF p_cur_x_move_points >= CUR_MOVE_THRESHOLD THEN
         p_cur_x_move_points = 0 
@@ -204,13 +215,6 @@ cursor_bitmap:
     BITMAP "X......X"
     BITMAP "X......X"
     BITMAP "XXXXXXXX"
-
-' don't think this is needed since I made consts above
-'controller_direction:
-'    DATA 0,DOWN,RIGHT,DOWN_DOWN_RIGHT,UP,0,UP_RIGHT_RIGHT,0          '$00 - $07
-'    DATA LEFT,DOWN_LEFT_LEFT,0,0,UP_UP_LEFT,0,0,0                    '$08 - $0F
-'    DATA 0,DOWN_DOWN_LEFT,DOWN_RIGHT_RIGHT,DOWN_RIGHT,0,0,UP_RIGHT,0 '$10 - $17
-'    DATA UP_LEFT_LEFT,DOWN_LEFT,0,0,UP_LEFT,0,0,0                    '$18 - $1F
 
 'indicates how many cursor "move points" are added when moving in each of the 16 directions
 '0s are for non-existent direction values; more efficient way? sparsely populated?
