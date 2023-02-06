@@ -5,39 +5,8 @@ init:   PROCEDURE
     WAIT
     DEFINE CARD_NUM_CURSOR, 1, cursor_bitmap 'define cursor as card 0; 1 means load just 1 card (can do multiple)
     WAIT 'cards will get garbled if no WAIT between DEFINEs
-    DEFINE CARD_NUM_LAND, 1, land_bitmap
+    DEFINE CARD_NUM_LAND, 17, land_bitmaps
     WAIT
-    DEFINE CARD_NUM_LAND_0, 1, land_bitmap_0
-    WAIT
-    DEFINE CARD_NUM_LAND_1, 1, land_bitmap_1
-    WAIT
-    DEFINE CARD_NUM_LAND_2, 1, land_bitmap_2
-    WAIT
-    DEFINE CARD_NUM_LAND_3, 1, land_bitmap_3
-    WAIT
-    DEFINE CARD_NUM_LAND_4, 1, land_bitmap_4
-    WAIT
-    DEFINE CARD_NUM_LAND_5, 1, land_bitmap_5
-    WAIT
-    DEFINE CARD_NUM_LAND_6, 1, land_bitmap_6
-    WAIT
-    DEFINE CARD_NUM_LAND_7, 1, land_bitmap_7
-    WAIT
-    DEFINE CARD_NUM_LAND_8, 1, land_bitmap_8
-    WAIT
-    DEFINE CARD_NUM_LAND_9, 1, land_bitmap_9
-    WAIT
-    DEFINE CARD_NUM_LAND_10, 1, land_bitmap_10
-    WAIT
-    DEFINE CARD_NUM_LAND_11, 1, land_bitmap_11
-    WAIT
-    DEFINE CARD_NUM_LAND_12, 1, land_bitmap_12
-    WAIT
-    DEFINE CARD_NUM_LAND_13, 1, land_bitmap_13
-    WAIT
-    DEFINE CARD_NUM_LAND_14, 1, land_bitmap_14
-    WAIT
-    DEFINE CARD_NUM_LAND_15, 1, land_bitmap_15
 
     GOSUB init_player_colors
     GOSUB init_cursor
