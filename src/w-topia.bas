@@ -17,8 +17,8 @@
     
     'game card constants
     CONST CARD_NUM_CURSOR = 0
-    CONST CARD_NUM_LAND   = 1
-
+    CONST CARD_NUM_LAND   = 1 'there are many but this is the first one
+        
 main:
     GOSUB init
     SCREEN map_cards

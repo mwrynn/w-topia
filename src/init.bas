@@ -5,7 +5,7 @@ init:   PROCEDURE
     WAIT
     DEFINE CARD_NUM_CURSOR, 1, cursor_bitmap 'define cursor as card 0; 1 means load just 1 card (can do multiple)
     WAIT 'cards will get garbled if no WAIT between DEFINEs
-    DEFINE CARD_NUM_LAND, 1, land_bitmap
+    DEFINE CARD_NUM_LAND, 17, land_bitmaps
     WAIT
 
     GOSUB init_player_colors
