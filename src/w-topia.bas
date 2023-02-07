@@ -22,6 +22,7 @@
 main:
     GOSUB init
     SCREEN map_cards
+    GOSUB update_status_bar
     GOTO game_loop
 
 INCLUDE "init.bas"
@@ -44,6 +45,21 @@ game_loop:
     WAIT
     GOTO game_loop
 
+update_status_bar:  PROCEDURE
+    'show p1 money at 220, spaces on the left (support 5 digits)
+    PRINT AT 220 COLOR p1_color,<.5>#p1_money
+
+    'show p2 money at 234, spaces on the left (support 5 digits)
+    PRINT AT 234 COLOR p2_color,<.5>#p2_money
+
+    'show turns left at 226, spaces on the left (support 3 digits)
+    PRINT AT 226 COLOR YELLOW,<.3>turns_left
+
+    'show turns left at 230, spaces on the left (support 3 digits)
+    PRINT AT 230 COLOR YELLOW,<.3>seconds_left
+END
+
+'
 INCLUDE "move-cursor.bas"
 INCLUDE "bitmap.bas"
 INCLUDE "map.bas"
