@@ -167,6 +167,7 @@ land_bitmaps:
     BITMAP "XX...XXX"
     BITMAP "...XXXXX"
 
+land_bitmaps_2:
     'south edge
     BITMAP "XXXXXXXX"
     BITMAP "XXXXXXXX"

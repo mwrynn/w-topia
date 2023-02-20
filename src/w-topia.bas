@@ -18,7 +18,9 @@
     'game card constants
     CONST CARD_NUM_CURSOR = 0
     CONST CARD_NUM_LAND   = 1 'there are many but this is the first one
-        
+    CONST CARD_NUM_LAND_2 = 17 'second block of land cards
+
+    CONST FRAMES_PER_SEC = 60
 main:
     GOSUB init
     SCREEN map_cards
@@ -30,7 +32,10 @@ INCLUDE "init.bas"
 game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
     SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
-   'SPRITE 0, $0300 + 10, $0100 + 8, $0807 + 1 * 8
+
+    'capture input
+    cont_input1 = CONT1
+    cont_input2 = CONT2
 
     'p1 move cursor logic
     GOSUB p1_setup_move_cursor
@@ -41,16 +46,48 @@ game_loop:
     GOSUB p2_setup_move_cursor
     GOSUB move_cursor
     GOSUB p2_finish_move_cursor
+
+    'process side button/status bar changes
+    GOSUB p1_setup_get_side_button_state
+    GOSUB get_side_button_state
+    GOSUB p1_finish_get_side_button_state
     
+    GOSUB p2_setup_get_side_button_state
+    GOSUB get_side_button_state
+    GOSUB p2_finish_get_side_button_state
+
+    GOSUB do_turn_timer
+    GOSUB update_status_bar
+    IF seconds_left = 0 THEN
+        GOSUB end_turn
+    END IF
+     
     WAIT
     GOTO game_loop
 
 update_status_bar:  PROCEDURE
-    'show p1 money at 220, spaces on the left (support 5 digits)
-    PRINT AT 220 COLOR p1_color,<.5>#p1_money
+    GOSUB p1_get_should_show_vars
+    GOSUB p2_get_should_show_vars
 
-    'show p2 money at 234, spaces on the left (support 5 digits)
-    PRINT AT 234 COLOR p2_color,<.5>#p2_money
+    IF p1_should_show_population THEN
+        GOSUB p1_show_population
+    ELSEIF p1_should_show_score THEN
+     	GOSUB p1_show_score
+    ELSEIF p1_should_show_last_turns_score THEN
+        GOSUB p1_show_last_turns_score
+    ELSE
+        GOSUB p1_show_money
+    END IF
+
+    IF p2_should_show_population THEN
+        GOSUB p2_show_population
+    ELSEIF p2_should_show_score THEN
+        GOSUB p2_show_score
+    ELSEIF p2_should_show_last_turns_score THEN
+        GOSUB p2_show_last_turns_score
+    ELSE
+        GOSUB p2_show_money
+    END IF
 
     'show turns left at 226, spaces on the left (support 3 digits)
     PRINT AT 226 COLOR YELLOW,<.3>turns_left
@@ -59,8 +96,78 @@ update_status_bar:  PROCEDURE
     PRINT AT 230 COLOR YELLOW,<.3>seconds_left
 END
 
-'
+p1_get_should_show_vars:    PROCEDURE
+    GOSUB p1_setup_should_show_population
+    GOSUB should_show_population
+    GOSUB p1_finish_should_show_population
+
+    GOSUB p1_setup_should_show_score
+    GOSUB should_show_score
+    GOSUB p1_finish_should_show_score
+
+    GOSUB p1_setup_should_show_last_turns_score
+    GOSUB should_show_last_turns_score
+    GOSUB p1_finish_should_show_last_turns_score
+END
+
+p2_get_should_show_vars:    PROCEDURE
+    GOSUB p2_setup_should_show_population
+    GOSUB should_show_population
+    GOSUB p2_finish_should_show_population
+
+    GOSUB p2_setup_should_show_score
+    GOSUB should_show_score
+    GOSUB p2_finish_should_show_score
+
+    GOSUB p2_setup_should_show_last_turns_score
+    GOSUB should_show_last_turns_score
+    GOSUB p2_finish_should_show_last_turns_score
+END
+
+p1_show_money:  PROCEDURE
+    PRINT AT 220 COLOR p1_color,<.5>#p1_money
+END
+
+p1_show_score:  PROCEDURE
+    PRINT AT 220 COLOR p1_color,<.5>#p1_score
+END
+
+p1_show_population: PROCEDURE
+    PRINT AT 220 COLOR p1_color,<.5>#p1_population
+END
+
+p1_show_last_turns_score:  PROCEDURE
+    PRINT AT 220 COLOR p1_color,<.5>#p1_show_last_turns_score
+END
+
+p2_show_money:  PROCEDURE
+    PRINT AT 234 COLOR p2_color,<.5>#p2_money
+END
+
+p2_show_score:  PROCEDURE
+    PRINT AT 234 COLOR p2_color,<.5>#p2_score
+END
+
+p2_show_population: PROCEDURE
+    PRINT AT 234 COLOR p2_color,<.5>#p2_population
+END
+
+p2_show_last_turns_score:  PROCEDURE
+    PRINT AT 234 COLOR p2_color,<.5>#p2_show_last_turns_score
+END
+
+do_turn_timer:  PROCEDURE
+    IF FRAME % FRAMES_PER_SEC = 0 THEN
+        seconds_left = seconds_left - 1
+    END IF
+END
+
+end_turn:   PROCEDURE
+    PRINT AT 50 COLOR 7, "end"
+END
+
 INCLUDE "move-cursor.bas"
+INCLUDE "side-buttons.bas"
 INCLUDE "bitmap.bas"
 INCLUDE "map.bas"
 INCLUDE "cursor-move-data.bas"

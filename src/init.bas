@@ -5,15 +5,18 @@ init:   PROCEDURE
     WAIT
     DEFINE CARD_NUM_CURSOR, 1, cursor_bitmap 'define cursor as card 0; 1 means load just 1 card (can do multiple)
     WAIT 'cards will get garbled if no WAIT between DEFINEs
-    DEFINE CARD_NUM_LAND, 17, land_bitmaps
+    DEFINE CARD_NUM_LAND, 16, land_bitmaps
     WAIT
+    DEFINE CARD_NUM_LAND_2, 1, land_bitmaps_2
 
     GOSUB init_player_colors
     GOSUB init_cursor
     GOSUB init_player_stats
     GOSUB init_game_stats
+    GOSUB init_side_button_states
     
     SIGNED cont_input
+    'GOSUB p1_show_money
 END
     
 init_cursor:    PROCEDURE
@@ -61,7 +64,7 @@ init_player_colors: PROCEDURE
         p1_color_low_bits = p1_color
     END IF
 
-    IF p2_color > 7 THEN
+    IF p2_color > $7 THEN
         p2_color_high_bit = 1
         p2_color_low_bits = p2_color AND $7
     ELSE
@@ -79,6 +82,9 @@ init_player_stats:  PROCEDURE
 
     #p1_population = 1000
     #p2_population = 1000
+
+    #p1_last_turns_score = 0
+    #p2_last_turns_score = 1
 END
 
 init_game_stats:  PROCEDURE
