@@ -27,32 +27,6 @@ END
 
 '''
 
-p1_setup_get_side_button_state_delta:   PROCEDURE
-    p_last_side_button_state = p1_last_side_button_state
-    p_side_button_state = p1_side_button_state
-END
-
-p2_setup_get_side_button_state_delta:	PROCEDURE
-    p_last_side_button_state =	p2_last_side_button_state
-    p_side_button_state = p2_side_button_state
-END
-
-p1_finish_get_side_button_state_delta:  PROCEDURE
-    p1_side_button_delta = p_side_button_delta
-    p1_last_side_button_state = p1_side_button_state
-END
-
-p2_finish_get_side_button_state_delta:	PROCEDURE
-    p2_side_button_delta = p_side_button_delta
-    p2_last_side_button_state =	p2_side_button_state
-END
-    
-get_side_button_state_delta:    PROCEDURE
-    p_side_button_delta = p_last_side_button_state XOR p_side_button_state
-END
-
-'''
-
 p1_setup_should_show_score: PROCEDURE
     p_side_button_state = p1_side_button_state
 END
