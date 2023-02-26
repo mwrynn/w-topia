@@ -164,6 +164,45 @@ END
 
 end_turn:   PROCEDURE
     PRINT AT 50 COLOR 7, "end"
+    'do bing bong bang
+    'bing: scores for this turn that is ending; says SCORES (one char to the left of right most turn number) in white
+    PRINT AT 225 COLOR WHITE,"SCORES"
+    GOSUB p1_show_last_turns_score
+    GOSUB p2_show_last_turns_score
+    FOR i = 0 TO 50
+        SOUND 0, 213, 10
+        WAIT
+    NEXT i
+
+    FOR i = 0 TO 50
+        SOUND 0,,0
+        WAIT
+    NEXT i
+    
+    'bong: total scores; says TOTALS in same location
+    PRINT AT 225 COLOR WHITE,"TOTALS"
+    FOR i = 0 TO 50
+        SOUND 0, 427, 10
+        WAIT
+    NEXT i
+    GOSUB p1_show_score
+    GOSUB p2_show_score
+
+    FOR i = 0 TO 50
+       SOUND 0,,0
+       WAIT
+    NEXT i
+    
+    'bang: back to the game
+    PRINT AT 225 COLOR WHITE,"       "
+    FOR i = 0 TO 50
+        SOUND 0, 320, 10
+        WAIT
+    NEXT i
+
+    SOUND 0,,0
+
+    seconds_left = max_seconds_left
 END
 
 INCLUDE "move-cursor.bas"

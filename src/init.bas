@@ -89,5 +89,6 @@ END
 
 init_game_stats:  PROCEDURE
     turns_left = 30
-    seconds_left = 100
+    max_seconds_left = 10
+    seconds_left = max_seconds_left
 END
