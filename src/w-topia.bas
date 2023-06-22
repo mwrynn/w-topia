@@ -4,23 +4,6 @@
     INCLUDE "const-intv-cont.bas"
     INCLUDE "const-intv-card.bas"
     
-    'player 1 cursor constants
-    CONST P1_CUR_STARTING_X = 20
-    CONST P1_CUR_STARTING_Y = 20
-
-    'player 2 cursor constants
-    CONST P2_CUR_STARTING_X = 100
-    CONST P2_CUR_STARTING_Y = 20
-
-    'general cursor constants
-    CONST CUR_MOVE_THRESHOLD = 6 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
-    
-    'game card constants
-    CONST CARD_NUM_CURSOR = 0
-    CONST CARD_NUM_LAND   = 1 'there are many but this is the first one
-    CONST CARD_NUM_LAND_2 = 17 'second block of land cards
-
-    CONST FRAMES_PER_SEC = 60
 main:
     GOSUB init
     SCREEN map_cards
@@ -35,7 +18,9 @@ game_loop:
 
     'capture input
     cont_input1 = CONT1
+    cont_input1_key = CONT1.key 'can't "reference" cont_input1.key later so must capture like this
     cont_input2 = CONT2
+    cont_input2_key = CONT2.key
 
     'p1 move cursor logic
     GOSUB p1_setup_move_cursor
@@ -55,6 +40,19 @@ game_loop:
     GOSUB p2_setup_get_side_button_state
     GOSUB get_side_button_state
     GOSUB p2_finish_get_side_button_state
+
+    'process number key presses
+    GOSUB p1_setup_get_num_key_press
+    GOSUB get_num_key_press
+    GOSUB p1_finish_get_num_key_press
+
+    GOSUB p1_setup_process_key_press
+    GOSUB process_key_press
+    GOSUB p1_finish_process_key_press
+
+    'GOSUB p2_setup_get_num_key_press
+    'GOSUB get_num_key_press
+    'GOSUB p2_finish_get_num_key_press
 
     GOSUB do_turn_timer
     GOSUB update_status_bar
@@ -216,3 +214,5 @@ INCLUDE "side-buttons.bas"
 INCLUDE "bitmap.bas"
 INCLUDE "map.bas"
 INCLUDE "cursor-move-data.bas"
+INCLUDE "build.bas"
+INCLUDE "num-keys.bas"

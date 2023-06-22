@@ -5,6 +5,11 @@
 'to ease managing these params, call before this: p1_setup_move_cursor, p2_setup_move_cursor
 'and after, call: p1_finish_move_cursor, p2_finish_move_cursor
 move_cursor:   PROCEDURE
+    'don't move if a key is pressed (magic from Óscar's book)
+    IF ((cont_input AND $E0) = $80) + ((cont_input AND $E0) = $40) + ((cont_input AND $E0) = $20) THEN 
+        RETURN
+    END IF
+
     cont_x_input = direction_offset_x(cont_input AND $1F)
     p_cur_x_move_points = p_cur_x_move_points + cont_x_input
     cont_y_input = direction_offset_y(cont_input AND $1F)
@@ -38,6 +43,7 @@ p1_setup_move_cursor:  PROCEDURE
     p_cur_y_move_points = p1_cur_y_move_points
     p_cur_x = p1_cur_x
     p_cur_y = p1_cur_y
+
 END
 
 'sets up p2 variables for move_cursor calls

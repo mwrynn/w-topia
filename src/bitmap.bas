@@ -167,7 +167,7 @@ land_bitmaps:
     BITMAP "XX...XXX"
     BITMAP "...XXXXX"
 
-land_bitmaps_2:
+land_bitmaps_2: 'because there is a limit of 16 bitmaps that can be loaded into cards at a time
     'south edge
     BITMAP "XXXXXXXX"
     BITMAP "XXXXXXXX"

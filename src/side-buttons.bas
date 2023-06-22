@@ -3,6 +3,8 @@ init_side_button_states:    PROCEDURE
     p2_last_side_button_state = 0
 END
 
+'''
+
 p1_setup_get_side_button_state: PROCEDURE
     cont_input = cont_input1
 END
@@ -11,18 +13,18 @@ p2_setup_get_side_button_state: PROCEDURE
     cont_input = cont_input2
 END
 
+get_side_button_state:    PROCEDURE
+    'PRINT AT 2 COLOR 7, cont_input
+    p_side_button_state = cont_input AND $E0
+    PRINT AT 5 COLOR 6, p_side_button_state
+END
+
 p1_finish_get_side_button_state: PROCEDURE
     p1_side_button_state = p_side_button_state
 END
     
 p2_finish_get_side_button_state: PROCEDURE
     p2_side_button_state = p_side_button_state
-END
-
-get_side_button_state:    PROCEDURE
-    'PRINT AT 2 COLOR 7, cont_input
-    p_side_button_state = cont_input AND $E0
-    PRINT AT 5 COLOR 6, p_side_button_state
 END
 
 '''

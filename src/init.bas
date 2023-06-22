@@ -1,4 +1,23 @@
 init:   PROCEDURE
+    'player 1 cursor constants
+    CONST P1_CUR_STARTING_X = 20
+    CONST P1_CUR_STARTING_Y = 20
+
+    'player 2 cursor constants
+    CONST P2_CUR_STARTING_X = 100
+    CONST P2_CUR_STARTING_Y = 20
+
+    'general cursor constants
+    CONST CUR_MOVE_THRESHOLD = 6 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
+    
+    'game card constants
+    CONST CARD_NUM_CURSOR = 0
+    CONST CARD_NUM_LAND   = 1  'there are many but this is the first one
+    CONST CARD_NUM_LAND_2 = 17 'second block of land cards, because limit of 16 cards loaded at a time
+    CONST CARD_NUM_BUILD  = 18 
+
+    CONST FRAMES_PER_SEC = 60
+
     'init graphics
     CLS
     MODE 0, BLUE, TAN, BLUE, TAN
@@ -7,13 +26,18 @@ init:   PROCEDURE
     WAIT 'cards will get garbled if no WAIT between DEFINEs
     DEFINE CARD_NUM_LAND, 16, land_bitmaps
     WAIT
-    DEFINE CARD_NUM_LAND_2, 1, land_bitmaps_2
+    DEFINE CARD_NUM_LAND_2, 1, land_bitmaps_2 'second block of land cards, because limit of 16 cards loaded at a time
+    WAIT
+    DEFINE CARD_NUM_BUILD, 9, build_bitmaps
+    WAIT
 
     GOSUB init_player_colors
     GOSUB init_cursor
     GOSUB init_player_stats
     GOSUB init_game_stats
     GOSUB init_side_button_states
+    GOSUB init_num_key_states
+    GOSUB init_misc
     
     SIGNED cont_input
     'GOSUB p1_show_money
@@ -91,4 +115,9 @@ init_game_stats:  PROCEDURE
     turns_left = 30
     max_seconds_left = 10
     seconds_left = max_seconds_left
+END
+
+init_misc:  PROCEDURE
+    #COLOR_STACK_BG_SHIFT = &0010000000000000
+    #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
 END
