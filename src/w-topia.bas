@@ -11,6 +11,7 @@ main:
     GOTO game_loop
 
 INCLUDE "init.bas"
+INCLUDE "sound.bas"
     
 game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
@@ -173,38 +174,18 @@ end_turn:   PROCEDURE
     PRINT AT 225 COLOR WHITE,"SCORES"
     GOSUB p1_show_last_turns_score
     GOSUB p2_show_last_turns_score
-    FOR i = 0 TO 50
-        SOUND 0, 213, 10
-        WAIT
-    NEXT i
-
-    FOR i = 0 TO 50
-        SOUND 0,,0
-        WAIT
-    NEXT i
+    GOSUB play_sound_bing
     
     'bong: total scores; says TOTALS in same location
     PRINT AT 225 COLOR WHITE,"TOTALS"
-    FOR i = 0 TO 50
-        SOUND 0, 427, 10
-        WAIT
-    NEXT i
     GOSUB p1_show_score
     GOSUB p2_show_score
 
-    FOR i = 0 TO 50
-       SOUND 0,,0
-       WAIT
-    NEXT i
+    GOSUB play_sound_bong
     
-    'bang: back to the game
+    'bung: back to the game
     PRINT AT 225 COLOR WHITE,"       "
-    FOR i = 0 TO 50
-        SOUND 0, 320, 10
-        WAIT
-    NEXT i
-
-    SOUND 0,,0
+    GOSUB play_sound_bung
 
     seconds_left = max_seconds_left
 END
