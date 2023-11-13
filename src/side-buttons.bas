@@ -14,9 +14,7 @@ p2_setup_get_side_button_state: PROCEDURE
 END
 
 get_side_button_state:    PROCEDURE
-    'PRINT AT 2 COLOR 7, cont_input
     p_side_button_state = cont_input AND $E0
-    PRINT AT 5 COLOR 6, p_side_button_state
 END
 
 p1_finish_get_side_button_state: PROCEDURE
