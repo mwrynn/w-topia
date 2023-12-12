@@ -84,16 +84,19 @@ END
 get_map_tile:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
     map_tile_x = ((x_coord-8+4) - (x_coord-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
     map_tile_y = ((y_coord-8+4) - (y_coord-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
+    map_index = 20*map_tile_y + map_tile_x
 END
 
 p1_finish_get_map_tile: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
+    p1_map_index = map_index
 END
 
 p2_finish_get_map_tile: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
+    p2_map_index = map_index
 END
 
 '''
@@ -124,9 +127,8 @@ END
 '    map_ownership(20*map_tile_y + map_tile_x) = map_ownership(20*map_tile_y + map_tile_x) + building_index * 4 '* 4 is shifting two bits left
 'END
 
-'PRECONDITION: these vars are set: building_index, map_tile_x, map_tile_y
+'PRECONDITION: these vars are set: building_index, map_index
 set_building:   PROCEDURE
-    map_index = 20*map_tile_y + map_tile_x
 
     'check prev card - if prev has building, then set this bg bit off 
     'check that all subsequent cards have bit off until you hit a non-building, then set that one to on

@@ -120,32 +120,39 @@ END
 '''
 
 'important: only to be called from process_key_press!
+'assumes that having enough money (#p_money) has already been checked
 build:  PROCEDURE
-    GOSUB get_can_build_at_cursor
+    GOSUB can_build_at_cursor
     PRINT AT 15 COLOR p1_color, <>can_build_at_cursor
-    IF can_build_at_cursor THEN
-        'check cursor at valid location
-        GOSUB get_map_tile
-        GOSUB get_map_ownership
-        IF map_ownership_result = player THEN
-            #p_money = #p_money - build_costs(p_registered_command-1)
-            building_index = p_registered_command-1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
-            GOSUB set_building
-        ELSE
-            GOSUB invalid_key_press
-        END IF
+    IF can_build_at_cursor_result THEN
+        #p_money = #p_money - build_costs(p_registered_command-1)
+        building_index = p_registered_command-1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
+        GOSUB set_building
+    ELSE
+        GOSUB invalid_key_press
+    END IF
     'TODO: ELSE 'boat case
 
     END IF
 END
 
 'helper function to build; assumes p_registered_command already set and has no setup/finish funcs
-get_can_build_at_cursor:    PROCEDURE
-    IF p_registered_command >= 1 AND p_registered_command <= 7 THEN 'any "building" i.e. not a boat
-        can_build_at_cursor = 1
-    ELSE
-        can_build_at_cursor = 0
+'does not consider cost
+can_build_at_cursor:    PROCEDURE
+    IF p_registered_command >= 1 AND p_registered_command <= 7 THEN 'any "building" i.e. not a boat, must be on land owned by player
+        GOSUB get_map_tile
+        GOSUB get_map_ownership
+
+        IF map_ownership_result = player THEN
+            'verify no building preexists at location
+            GOSUB has_building
+            IF NOT ret_has_building THEN
+                can_build_at_cursor_result = 1
+                RETURN
+            END IF
+        END IF
     END IF
+    can_build_at_cursor_result = 0
 END
 
 invalid_key_press:  PROCEDURE
