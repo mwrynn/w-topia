@@ -111,8 +111,8 @@ p1_setup_set_building:  PROCEDURE
 END
 
 p2_setup_set_building:  PROCEDURE
-    map_tile_x = p1_map_tile_x
-    map_tile_y = p1_map_tile_y
+    map_tile_x = p2_map_tile_x
+    map_tile_y = p2_map_tile_y
 END
 
 '''can't do this because map_ownership read-only; going to just work with backtab itself for the "model"

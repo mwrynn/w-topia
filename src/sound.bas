@@ -25,8 +25,10 @@ CONST SOUND_TONE_C4_HZ = 262
 CONST SOUND_TONE_C4_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_C4_HZ
 CONST SOUND_TONE_F4_HZ = 349
 CONST SOUND_TONE_F4_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_F4_HZ
+CONST SOUND_TONE_F1_HZ = 44
+CONST SOUND_TONE_F1_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_F1_HZ
 
-
+'play first tone in end-of-turn chime ("bing!")
 play_sound_bing:   PROCEDURE
 
     'SOUND 3, 3579545 / 32 / 16 / desired_frequency, envelope
@@ -38,33 +40,42 @@ play_sound_bing:   PROCEDURE
     NEXT i
 
     FOR i = 0 TO 50
-        SOUND 0,,0
+        SOUND SOUND_CHANNEL_A,,0
         WAIT
     NEXT i
 
 END
 
-'play second tone in end-of-turn chime ("bong")
+'play second tone in end-of-turn chime ("bong!")
 play_sound_bong:    PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 10
-        SOUND 0, SOUND_TONE_C4_PARAM, 10
+        SOUND SOUND_CHANNEL_A, SOUND_TONE_C4_PARAM, 10
         WAIT
     NEXT i
 
     FOR i = 0 TO 50
-        SOUND 0,,0
+        SOUND SOUND_CHANNEL_A,,0
         WAIT
     NEXT i
 END
 
-'play third tone in end-of-turn chime ("bung")
+'play third tone in end-of-turn chime ("bung!")
 play_sound_bung:    PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 10
-        SOUND 0, SOUND_TONE_F4_PARAM, 10
+        SOUND SOUND_CHANNEL_A, SOUND_TONE_F4_PARAM, 10
         WAIT
     NEXT i
 
-    SOUND 0,,0
+    SOUND SOUND_CHANNEL_A,,0
 END
 
+'play bzzt sound to indicate something negative; such as when there is invalid input
+'TODO: make this actually sound like a buzz; sort of a placeholder for now
+play_sound_bzzt:    PROCEDURE
+    FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
+        SOUND SOUND_CHANNEL_A, SOUND_TONE_F4_PARAM, 10
+        WAIT
+    NEXT i
 
+    SOUND SOUND_CHANNEL_A,,0
+END
