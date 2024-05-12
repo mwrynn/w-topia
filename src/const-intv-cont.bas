@@ -15,6 +15,6 @@
     CONST DOWN_LEFT_LEFT   = $09
     CONST DOWN_DOWN_RIGHT  = $03
     CONST DOWN_RIGHT_RIGHT = $12
-    CONST SIDE_BUTTON_TOP  = $A0 'left and right are the same
+    CONST SIDE_BUTTON_TOP  = $A0 'left and right side buttons are the same
     CONST SIDE_BUTTON_LEFT_BOTTOM = $60
     CONST SIDE_BUTTON_RIGHT_BOTTOM = $C0
