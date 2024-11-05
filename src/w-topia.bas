@@ -51,9 +51,13 @@ game_loop:
     GOSUB process_key_press
     GOSUB p1_finish_process_key_press
 
-    'GOSUB p2_setup_get_num_key_press
-    'GOSUB get_num_key_press
-    'GOSUB p2_finish_get_num_key_press
+    GOSUB p2_setup_get_num_key_press
+    GOSUB get_num_key_press
+    GOSUB p2_finish_get_num_key_press
+
+    GOSUB p2_setup_process_key_press
+    GOSUB process_key_press
+    GOSUB p2_finish_process_key_press
 
     GOSUB do_turn_timer
     GOSUB update_status_bar
@@ -169,7 +173,7 @@ end_turn:   PROCEDURE
     'GOSUB get_map_ownership
     'PRINT AT 108 COLOR RED, <>map_ownership_result
     
-    'do bing bong bang
+    'do bing bong bung
     'bing: scores for this turn that is ending; says SCORES (one char to the left of right most turn number) in white
     PRINT AT 225 COLOR WHITE,"SCORES"
     GOSUB p1_show_last_turns_score

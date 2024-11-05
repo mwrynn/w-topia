@@ -73,18 +73,18 @@ END
 p2_finish_process_key_press: PROCEDURE
     p2_last_num_key_pressed = p_last_num_key_pressed
     p2_registered_command = p_registered_command
-    #p_money2 = #p_money
+    #p2_money = #p_money
     GOSUB p2_finish_get_map_tile
 END
 
 process_key_press:  PROCEDURE
-    PRINT AT 3 COLOR p1_color, <.2>p_registered_command
-    PRINT AT 6 COLOR p1_color, <.2>p_last_num_key_pressed
-    PRINT AT 9 COLOR p1_color, <.2>p_key_pressed
+    'PRINT AT 3 COLOR p1_color, <.2>p_registered_command
+    'PRINT AT 6 COLOR p1_color, <.2>p_last_num_key_pressed
+    'PRINT AT 9 COLOR p1_color, <.2>p_key_pressed
 
     'ignore keypresses spanning multiple iterations - player holding the key for longer than exactly 1/50 of a second is expected
     IF p_key_pressed = p_last_num_key_pressed THEN 
-        p_registered_command = p_registered_command 'TODO: this is just a noop
+        RETURN
 
     ELSEIF p_key_pressed = KEY_NOTHING THEN
         'lock in building selection command once the player releases the key
@@ -95,9 +95,11 @@ process_key_press:  PROCEDURE
     ELSEIF p_key_pressed = KEY_ENTER THEN 
         IF p_registered_command = KEY_NOTHING THEN 
             GOSUB invalid_key_press
+            RETURN
         ELSE 'command good so try to build the thing
             IF #p_money < build_costs(p_last_num_key_pressed-1) THEN 'player cannot afford it
                 GOSUB invalid_key_press
+                RETURN
             ELSE 'player can afford it
                 GOSUB build
                 p_registered_command = KEY_NOTHING
@@ -109,37 +111,50 @@ process_key_press:  PROCEDURE
             p_registered_command = p_key_pressed
         ELSE
             GOSUB invalid_key_press
+            RETURN
         END IF
     END IF
 
-    'whatever the case, wrap it up
     p_last_num_key_pressed = p_key_pressed
-    RETURN
 END 
 
 '''
 
 'important: only to be called from process_key_press!
 'assumes that having enough money (#p_money) has already been checked
+'1=FORT     2=FACTORY   3=CROPS
+'4=SCHOOL   5=HOSPITAL  6=HOUSING PROJECT
+'7=REBEL    8=PT BOAT   9=FISHING BOAT
 build:  PROCEDURE
-    GOSUB can_build_at_cursor
-    PRINT AT 15 COLOR p1_color, <>can_build_at_cursor
-    IF can_build_at_cursor_result THEN
-        #p_money = #p_money - build_costs(p_registered_command-1)
-        building_index = p_registered_command-1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
-        GOSUB set_building
-    ELSE
-        GOSUB invalid_key_press
-    END IF
-    'TODO: ELSE 'boat case
-
+    'building case
+    IF p_registered_command >= 1 AND p_registered_command <= 6 THEN 
+        GOSUB can_build_at_cursor
+        PRINT AT 15 COLOR p1_color, <>can_build_at_cursor_result
+        IF can_build_at_cursor_result THEN
+            #p_money = #p_money - build_costs(p_registered_command-1)
+            building_index = p_registered_command-1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
+            GOSUB set_building
+        ELSE
+            GOSUB invalid_key_press
+        END IF
+    'rebel case
+    ELSEIF p_registered_command = 7 THEN
+        p_registered_command=p_registered_command 'doing this as NOOP until I can figure out a proper way to do it
+    'boat case (PT or fishing)
+    ELSEIF p_registered_command = 8 OR p_registered_command = 9 THEN
+        GOSUB can_build_at_dock
+    'wtf case
+    ELSE 
+        p_registered_command=p_registered_command 'NOOP but maybe this should exit the program/display error msg if possible
     END IF
 END
 
-'helper function to build; assumes p_registered_command already set and has no setup/finish funcs
+'helper function to check if can build buildings
+'PRECONDITION: p_registered_command already set
+'has no setup/finish funcs
 'does not consider cost
 can_build_at_cursor:    PROCEDURE
-    IF p_registered_command >= 1 AND p_registered_command <= 7 THEN 'any "building" i.e. not a boat, must be on land owned by player
+    IF p_registered_command >= 1 AND p_registered_command <= 6 THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
         GOSUB get_map_tile
         GOSUB get_map_ownership
 
@@ -155,7 +170,18 @@ can_build_at_cursor:    PROCEDURE
     can_build_at_cursor_result = 0
 END
 
+'does not consider cost
+'PRECONDITION p_registered_command already set
+'has no setup/finish funcs
+can_build_at_dock:    PROCEDURE
+    IF p_registered_command = 8 OR p_registered_command = 9 THEN
+    END IF
+    can_build_at_dock_result = 0
+END
+
+
 invalid_key_press:  PROCEDURE
     p_registered_command = KEY_NOTHING
+    p_last_num_key_pressed = KEY_NOTHING
     GOSUB play_sound_bzzt
 END

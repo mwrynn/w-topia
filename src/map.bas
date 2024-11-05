@@ -90,13 +90,13 @@ END
 p1_finish_get_map_tile: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
-    p1_map_index = map_index
+    'p1_map_index = map_index 'don't need?
 END
 
 p2_finish_get_map_tile: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
-    p2_map_index = map_index
+    'p2_map_index = map_index 'don't need?
 END
 
 '''
@@ -118,16 +118,8 @@ p2_setup_set_building:  PROCEDURE
     map_tile_y = p2_map_tile_y
 END
 
-'''can't do this because map_ownership read-only; going to just work with backtab itself for the "model"
-'does no validity checks - assumes already done
-'PRECONDITION: these vars are set: building_index, map_tile_x, map_tile_y
-'map byte is set with lower 2 bits indicating owner, 3 upper bits not used, next 3 are for the building index as listed in build.bas
-'example: [000011][01] means player 1 owns, and the building index is 3
-'set_building:   PROCEDURE
-'    map_ownership(20*map_tile_y + map_tile_x) = map_ownership(20*map_tile_y + map_tile_x) + building_index * 4 '* 4 is shifting two bits left
-'END
-
 'PRECONDITION: these vars are set: building_index, map_index
+'does no validations - assumes validations already done
 set_building:   PROCEDURE
 
     'check prev card - if prev has building, then set this bg bit off 
@@ -160,11 +152,40 @@ END
 
 'PRECONDITION: map_index is set
 has_building:   PROCEDURE
-'#backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
-'
     IF (#backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT) >= (CARD_BASELINE + CARD_NUM_BUILD*CARD_MULT) THEN
         ret_has_building = 1
         RETURN
     END IF
     ret_has_building = 0
 END 
+
+p1_setup_is_dock_tile_occupied: PROCEDURE
+    dock_x = build_dock_x(1)
+    dock_y = build_dock_y(1)
+END
+
+p1_finish_is_dock_tile_occupied: PROCEDURE
+    p1_is_dock_tile_occupied_result = is_dock_tile_occupied_result
+END
+
+p2_setup_is_dock_tile_occupied: PROCEDURE
+    dock_x = build_dock_x(2)
+    dock_y = build_dock_y(2)
+END
+
+p2_finish_is_dock_tile_occupied: PROCEDURE
+    p2_is_dock_tile_occupied_result = is_dock_tile_occupied_result
+END
+
+is_dock_tile_occupied:  PROCEDURE
+    map_tile_x = ((dock_x-8+4) - (dock_x-8+4) % 8) / 8 
+    map_tile_y = ((dock_y-8+4) - (dock_y-8+4) % 8) / 8 
+
+    map_index = 20*dock_y + dock_x
+
+    IF #backtab(map_index) = OO THEN ' not sure if one-liner works
+        is_dock_tile_occupied_result = 1
+    ELSE
+        is_dock_tile_occupied_result = 0
+    END IF 
+END
