@@ -39,3 +39,5 @@ Then prefixes are `p1_setup_`, `p2_setup_`, `p1_finish_`, `p2_finish_`
 Return values are named `p1_do_the_thing` or `p2_do_the_thing`
 
 For the procs that DO NOT apply to two players, it is simply a standalone proc. Returned values are global variables so far. Will see if it is necessary to deviate from that convention in the future.
+
+Idea for an optimization: write a preprocessor script that uses a generic, reusable name for the parameters, such as p1_var1, p2_var1, p1_var2, automatically replacing them. Possible complication is going multiple levels in the call stack, they'd clobber each other. so would need to detect that somehow. Might be more trouble than worth
