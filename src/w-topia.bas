@@ -1,9 +1,12 @@
 'Game of W-Topia
-    INCLUDE "const-intv-color.bas"
-    INCLUDE "const-intv-sprite.bas"
-    INCLUDE "const-intv-cont.bas"
-    INCLUDE "const-intv-card.bas"
-    
+INCLUDE "const-intv-color.bas"
+INCLUDE "const-intv-sprite.bas"
+INCLUDE "const-intv-cont.bas"
+INCLUDE "const-intv-card.bas"
+INCLUDE "const-screen.bas"
+
+GOTO main 'not necessary but stops "label 'MAIN' never used" warning
+
 main:
     GOSUB init
     SCREEN map_cards
@@ -12,7 +15,7 @@ main:
 
 INCLUDE "init.bas"
 INCLUDE "sound.bas"
-    
+
 game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
     SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
@@ -92,11 +95,11 @@ update_status_bar:  PROCEDURE
         GOSUB p2_show_money
     END IF
 
-    'show turns left at 226, spaces on the left (support 3 digits)
-    PRINT AT 226 COLOR YELLOW,<.3>turns_left
+    'show turns left, spaces on the left (support 3 digits)
+    PRINT AT SCREEN_STATUS_POS_TURNS_LEFT COLOR YELLOW,<.3>turns_left
 
-    'show turns left at 230, spaces on the left (support 3 digits)
-    PRINT AT 230 COLOR YELLOW,<.3>seconds_left
+    'show time left (seconds), spaces on the left (support 3 digits)
+    PRINT AT SCREEN_STATUS_POS_TIME_LEFT COLOR YELLOW,<.3>seconds_left
 END
 
 p1_get_should_show_vars:    PROCEDURE
@@ -128,35 +131,35 @@ p2_get_should_show_vars:    PROCEDURE
 END
 
 p1_show_money:  PROCEDURE
-    PRINT AT 220 COLOR p1_color,<.5>#p1_money
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_money
 END
 
 p1_show_score:  PROCEDURE
-    PRINT AT 220 COLOR p1_color,<.5>#p1_score
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_score
 END
 
 p1_show_population: PROCEDURE
-    PRINT AT 220 COLOR p1_color,<.5>#p1_population
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_population
 END
 
 p1_show_last_turns_score:  PROCEDURE
-    PRINT AT 220 COLOR p1_color,<.5>#p1_show_last_turns_score
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_show_last_turns_score
 END
 
 p2_show_money:  PROCEDURE
-    PRINT AT 234 COLOR p2_color,<.5>#p2_money
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_money
 END
 
 p2_show_score:  PROCEDURE
-    PRINT AT 234 COLOR p2_color,<.5>#p2_score
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_score
 END
 
 p2_show_population: PROCEDURE
-    PRINT AT 234 COLOR p2_color,<.5>#p2_population
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_population
 END
 
 p2_show_last_turns_score:  PROCEDURE
-    PRINT AT 234 COLOR p2_color,<.5>#p2_show_last_turns_score
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_show_last_turns_score
 END
 
 do_turn_timer:  PROCEDURE
@@ -173,7 +176,7 @@ end_turn:   PROCEDURE
     'GOSUB get_map_ownership
     'PRINT AT 108 COLOR RED, <>map_ownership_result
     
-    'do bing bong bung
+    'do end of turn displays + sounds (bing bong bung)
     'bing: scores for this turn that is ending; says SCORES (one char to the left of right most turn number) in white
     PRINT AT 225 COLOR WHITE,"SCORES"
     GOSUB p1_show_last_turns_score

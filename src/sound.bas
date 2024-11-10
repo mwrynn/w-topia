@@ -14,26 +14,22 @@ CONST SOUND_CHANNEL_ENVELOPE = 3
 CONST SOUND_NOISE_AND_MIX_REGISTER = 4
 CONST SOUND_ENVELOPE_ENABLE = 48
 
-CONST SOUND_MAGIC_DIVISOR = 32
-
 ' can set 5-9 for first param, but only available with the secondary PSG in the ECS add-on module
 
 ' reference for notes and frequency: https://pages.mtu.edu/~suits/notefreqs.html
-CONST SOUND_TONE_C5_HZ = 523
-CONST SOUND_TONE_C5_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_C5_HZ
-CONST SOUND_TONE_C4_HZ = 262
-CONST SOUND_TONE_C4_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_C4_HZ
-CONST SOUND_TONE_F4_HZ = 349
-CONST SOUND_TONE_F4_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_F4_HZ
-CONST SOUND_TONE_F1_HZ = 44
-CONST SOUND_TONE_F1_PARAM = 3579545 / SOUND_MAGIC_DIVISOR / SOUND_TONE_F1_HZ
+
+'harcoding instead of calculating these, mostly because of 16-bit overflow
+'tones actually sounded right when testing it calculated,
+'but received "number exceeds 16 bits" warnings
+'will need separate consts and perhaps set of functions entirely if we choose to support PAL
+CONST NTSC_SOUND_TONE_C5 = 214 '3579545 / 32 / 523 (523 is Hz for C5)
+CONST NTSC_SOUND_TONE_C4 = 427 '3579545 / 32 / 262 (262 is Hz for C4)
+CONST NTSC_SOUND_TONE_F4 = 321 '3579545 / 32 / 349 (349 is Hz for F4)
+CONST NTSC_SOUND_TONE_F1 = 2542 '3579545 / 32 / 44 (44 is Hz for F1)
 
 'play first tone in end-of-turn chime ("bing!")
 play_sound_bing:   PROCEDURE
-
-    'SOUND 3, 3579545 / 32 / 16 / desired_frequency, envelope
-    'SOUND SOUND_CHANNEL_A, SOUND_TONE_C5_PARAM, 10
-    SOUND SOUND_CHANNEL_A, SOUND_TONE_C5_PARAM, SOUND_ENVELOPE_ENABLE
+    SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_C5, SOUND_ENVELOPE_ENABLE
     SOUND SOUND_CHANNEL_ENVELOPE, 6000, 8
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 10
         WAIT
@@ -49,7 +45,7 @@ END
 'play second tone in end-of-turn chime ("bong!")
 play_sound_bong:    PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 10
-        SOUND SOUND_CHANNEL_A, SOUND_TONE_C4_PARAM, 10
+        SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_C4, 10
         WAIT
     NEXT i
 
@@ -62,7 +58,7 @@ END
 'play third tone in end-of-turn chime ("bung!")
 play_sound_bung:    PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 10
-        SOUND SOUND_CHANNEL_A, SOUND_TONE_F4_PARAM, 10
+        SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10
         WAIT
     NEXT i
 
@@ -73,7 +69,18 @@ END
 'TODO: make this actually sound like a buzz; sort of a placeholder for now
 play_sound_bzzt:    PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
-        SOUND SOUND_CHANNEL_A, SOUND_TONE_F4_PARAM, 10
+        SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10
+        WAIT
+    NEXT i
+
+    SOUND SOUND_CHANNEL_A,,0
+END
+
+'play gentle "click" sound to indicate input received successfully
+'TODO: make this play the right sound; placeholder for nw
+play_sound_click:   PROCEDURE
+    FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
+        SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10
         WAIT
     NEXT i
 

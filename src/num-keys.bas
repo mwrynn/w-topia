@@ -1,6 +1,15 @@
-CONST KEY_CLEAR   = 10
-CONST KEY_ENTER   = 11
-CONST KEY_NOTHING = 12
+CONST KEY_FORT          = 1
+CONST KEY_FACTORY       = 2
+CONST KEY_CROPS         = 3
+CONST KEY_SCHOOL        = 4
+CONST KEY_HOSPITAL      = 5
+CONST KEY_HOUSE         = 6
+CONST KEY_REBEL         = 7
+CONST KEY_PT_BOAT       = 8
+CONST KEY_FISHING_BOAT  = 9
+CONST KEY_CLEAR         = 10
+CONST KEY_ENTER         = 11
+CONST KEY_NOTHING       = 12
 
 init_num_key_states:    PROCEDURE
     p1_last_num_key_pressed = KEY_NOTHING
@@ -78,6 +87,7 @@ p2_finish_process_key_press: PROCEDURE
 END
 
 process_key_press:  PROCEDURE
+    'debug prints
     'PRINT AT 3 COLOR p1_color, <.2>p_registered_command
     'PRINT AT 6 COLOR p1_color, <.2>p_last_num_key_pressed
     'PRINT AT 9 COLOR p1_color, <.2>p_key_pressed
@@ -120,32 +130,32 @@ END
 
 '''
 
-'important: only to be called from process_key_press!
+'builds the building at cursor location
+'PRECONDITIONS:
+    'p_registered_command already set
+    '#p_money already set to #p1_money or #p2_money
+'validates whether location is valid, i.e. no preexisting building exists and checks ownership
 'assumes that having enough money (#p_money) has already been checked
-'1=FORT     2=FACTORY   3=CROPS
-'4=SCHOOL   5=HOSPITAL  6=HOUSING PROJECT
-'7=REBEL    8=PT BOAT   9=FISHING BOAT
+'deducts money from #p_money; after calling this, caller must set #p[1|2]_money accordingly
 build:  PROCEDURE
-    'building case
-    IF p_registered_command >= 1 AND p_registered_command <= 6 THEN 
+    'any building case
+    IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 
         GOSUB can_build_at_cursor
         PRINT AT 15 COLOR p1_color, <>can_build_at_cursor_result
         IF can_build_at_cursor_result THEN
             #p_money = #p_money - build_costs(p_registered_command-1)
-            building_index = p_registered_command-1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
+            building_index = p_registered_command - 1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
             GOSUB set_building
         ELSE
             GOSUB invalid_key_press
         END IF
-    'rebel case
-    ELSEIF p_registered_command = 7 THEN
+    ELSEIF p_registered_command = KEY_REBEL THEN
         p_registered_command=p_registered_command 'doing this as NOOP until I can figure out a proper way to do it
-    'boat case (PT or fishing)
-    ELSEIF p_registered_command = 8 OR p_registered_command = 9 THEN
+    ELSEIF p_registered_command = KEY_FISHING_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
         GOSUB can_build_at_dock
     'wtf case
     ELSE 
-        p_registered_command=p_registered_command 'NOOP but maybe this should exit the program/display error msg if possible
+        p_registered_command = p_registered_command 'NOOP but maybe this should exit the program/display error msg if possible
     END IF
 END
 

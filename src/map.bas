@@ -17,6 +17,7 @@ CONST NN = CARD_BASELINE +15 * CARD_MULT + TAN
 CONST PP = CARD_BASELINE +16 * CARD_MULT + TAN
 CONST QQ = CARD_BASELINE +17 * CARD_MULT + TAN
 
+'defines the graphics (cards) to be used for each locations
 map_cards:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
@@ -40,7 +41,9 @@ CONST ZZ = 2
 'player 2 ownership is rightmost bit off, second-to-rightmost bit on
 'building number 1-7 shifted over by two bits, ORed with ownership two bits
 
-'TODO I think this has to be an array if we want to write to it; kinda big though so may need a hack
+'potential memory optimization: maybe make it a little more sparse?
+    'for example we don't need to store the first two lines so we could just assume for
+    'a lookup of row 0 or 1 (and also whatever indexes of the last three rows), it's always OO
 map_ownership:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
@@ -55,22 +58,6 @@ map_ownership:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
 
-'map_background_flip:
-'    DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
-'    DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
-'    DATA OO,OO,YY,YY,OO,OO,OO,OO,OO,OO,YY,OO,YY,YY,YY,OO,YY,YY,OO,OO
-'    DATA OO,YY,OO,OO,YY,OO,OO,OO,OO,OO,YY,OO,OO,OO,OO,OO,OO,YY,OO,OO
-'    DATA OO,YY,OO,OO,YY,OO,OO,OO,OO,OO,YY,OO,YY,OO,YY,OO,OO,OO,YY,OO
-'    DATA OO,YY,OO,OO,OO,OO,YY,OO,OO,OO,OO,OO,OO,OO,OO,YY,OO,OO,OO,YY
-'    DATA OO,OO,OO,YY,OO,OO,OO,YY,OO,OO,OO,OO,OO,OO,OO,OO,YY,OO,OO,YY
-'    DATA OO,OO,OO,OO,YY,OO,OO,OO,OO,YY,OO,OO,OO,OO,OO,YY,OO,OO,OO,YY
-'    DATA OO,OO,OO,YY,OO,OO,YY,YY,OO,OO,OO,OO,YY,YY,OO,OO,OO,YY,YY,OO
-'    DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
-'    DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
-'    DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
-
-
-'''
 p1_setup_get_map_tile:  PROCEDURE
     x_coord = p1_cur_x
     y_coord = p1_cur_y
