@@ -1,11 +1,24 @@
 'Game of W-Topia
+
+'any procedure definitions in includes would get executed as any other code
+'so jump to main to get right into our program flow without surprises
+GOTO main
+
 INCLUDE "const-intv-color.bas"
 INCLUDE "const-intv-sprite.bas"
 INCLUDE "const-intv-cont.bas"
 INCLUDE "const-intv-card.bas"
 INCLUDE "const-screen.bas"
 
-GOTO main 'not necessary but stops "label 'MAIN' never used" warning
+INCLUDE "init.bas"
+INCLUDE "sound.bas"
+INCLUDE "move-cursor.bas"
+INCLUDE "side-buttons.bas"
+INCLUDE "bitmap.bas"
+INCLUDE "map.bas"
+INCLUDE "cursor-move-data.bas"
+INCLUDE "build.bas"
+INCLUDE "num-keys.bas"
 
 main:
     GOSUB init
@@ -13,8 +26,6 @@ main:
     GOSUB update_status_bar
     GOTO game_loop
 
-INCLUDE "init.bas"
-INCLUDE "sound.bas"
 
 game_loop:
     SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
@@ -196,11 +207,3 @@ end_turn:   PROCEDURE
 
     seconds_left = max_seconds_left
 END
-
-INCLUDE "move-cursor.bas"
-INCLUDE "side-buttons.bas"
-INCLUDE "bitmap.bas"
-INCLUDE "map.bas"
-INCLUDE "cursor-move-data.bas"
-INCLUDE "build.bas"
-INCLUDE "num-keys.bas"
