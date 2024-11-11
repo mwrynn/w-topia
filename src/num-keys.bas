@@ -129,6 +129,8 @@ process_key_press:  PROCEDURE
 END 
 
 '''
+'would like to move the build-related functions to build.bas
+'but they don't work positioned there - lol. figure out why (TODO)
 
 'builds the building at cursor location
 'PRECONDITIONS:
@@ -160,11 +162,14 @@ build:  PROCEDURE
 END
 
 'helper function to check if can build buildings
-'PRECONDITION: p_registered_command already set
+'PRECONDITIONS:
+    'p_registered_command already set
+    'p#_setup_get_map_tile already called
+    'player is set
 'has no setup/finish funcs
 'does not consider cost
 can_build_at_cursor:    PROCEDURE
-    IF p_registered_command >= 1 AND p_registered_command <= 6 THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
+    IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
         GOSUB get_map_tile
         GOSUB get_map_ownership
 
@@ -188,7 +193,6 @@ can_build_at_dock:    PROCEDURE
     END IF
     can_build_at_dock_result = 0
 END
-
 
 invalid_key_press:  PROCEDURE
     p_registered_command = KEY_NOTHING
