@@ -1,3 +1,5 @@
+'input processing for number keys
+
 CONST KEY_FORT          = 1
 CONST KEY_FACTORY       = 2
 CONST KEY_CROPS         = 3
@@ -53,8 +55,11 @@ p1_setup_process_key_press: PROCEDURE
     p_registered_command = p1_registered_command
     p_last_num_key_pressed = p1_last_num_key_pressed
 
+    'need to set dock position because so that we can hand off to a player-agnostic flow from here
+    p_dock_map_index = p1_dock_map_index
+
     'setups for some procs in map.bas - I don't like it being here but it needs to call the map procs before returning to the "p#" context
-    GOSUB p1_setup_get_map_tile
+    GOSUB p1_setup_get_map_tile_at_cursor
     GOSUB p1_setup_set_building
 END
 
@@ -62,7 +67,7 @@ p1_finish_process_key_press: PROCEDURE
     p1_last_num_key_pressed = p_last_num_key_pressed
     p1_registered_command = p_registered_command
     #p1_money = #p_money
-    GOSUB p1_finish_get_map_tile
+    GOSUB p1_finish_get_map_tile_at_cursor
 END
 
 p2_setup_process_key_press: PROCEDURE
@@ -74,8 +79,11 @@ p2_setup_process_key_press: PROCEDURE
     p_registered_command = p2_registered_command
     p_last_num_key_pressed = p2_last_num_key_pressed
 
+    'need to set dock position because so that we can hand off to a player-agnostic flow from here
+    p_dock_map_index = p1_dock_map_index
+
     'setups for some procs in map.bas - I don't like it being here but it needs to call the map procs before returning to the "p#" context
-    GOSUB p2_setup_get_map_tile
+    GOSUB p2_setup_get_map_tile_at_cursor
     GOSUB p2_setup_set_building
 END
 
@@ -83,7 +91,7 @@ p2_finish_process_key_press: PROCEDURE
     p2_last_num_key_pressed = p_last_num_key_pressed
     p2_registered_command = p_registered_command
     #p2_money = #p_money
-    GOSUB p2_finish_get_map_tile
+    GOSUB p2_finish_get_map_tile_at_cursor
 END
 
 process_key_press:  PROCEDURE
@@ -141,20 +149,26 @@ END
 'deducts money from #p_money; after calling this, caller must set #p[1|2]_money accordingly
 build:  PROCEDURE
     'any building case
+    'PRINT AT 3 COLOR p1_color, <.2>p_registered_command
+    building_index = p_registered_command - 1
+    'PRINT AT 3 COLOR p1_color, <.2>building_index
     IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 
         GOSUB can_build_at_cursor
-        PRINT AT 15 COLOR p1_color, <>can_build_at_cursor_result
         IF can_build_at_cursor_result THEN
-            #p_money = #p_money - build_costs(p_registered_command-1)
-            building_index = p_registered_command - 1 'required for set_building and the backtab set below; could refactor to put this in a setup proc
+            
+            #p_money = #p_money - build_costs(building_index)         
             GOSUB set_building
         ELSE
             GOSUB invalid_key_press
         END IF
     ELSEIF p_registered_command = KEY_REBEL THEN
         p_registered_command=p_registered_command 'doing this as NOOP until I can figure out a proper way to do it
-    ELSEIF p_registered_command = KEY_FISHING_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
+    ELSEIF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
         GOSUB can_build_at_dock
+        IF can_build_at_dock_result THEN
+            #p_money = #p_money - build_costs(building_index)
+            GOSUB set_boat
+        END IF
     'wtf case
     ELSE 
         p_registered_command = p_registered_command 'NOOP but maybe this should exit the program/display error msg if possible
@@ -164,13 +178,14 @@ END
 'helper function to check if can build buildings
 'PRECONDITIONS:
     'p_registered_command already set
-    'p#_setup_get_map_tile already called
+    'p#_setup_get_map_tile_at_cursor already called
     'player is set
 'has no setup/finish funcs
 'does not consider cost
+'"returns" can_build_at_cursor_result (1/0)
 can_build_at_cursor:    PROCEDURE
     IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
-        GOSUB get_map_tile
+        GOSUB get_map_tile_at_cursor
         GOSUB get_map_ownership
 
         IF map_ownership_result = player THEN
@@ -188,8 +203,12 @@ END
 'does not consider cost
 'PRECONDITION p_registered_command already set
 'has no setup/finish funcs
+'"returns" can_build_at_dock_result (1/0)
 can_build_at_dock:    PROCEDURE
-    IF p_registered_command = 8 OR p_registered_command = 9 THEN
+    IF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
+        can_build_at_dock_result = 1
+        'TODO: check if dock space is occupied. perhaps this or another function can return the first unoccupied space (follow the original Utopia's logic)
+        RETURN
     END IF
     can_build_at_dock_result = 0
 END

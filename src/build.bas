@@ -1,8 +1,8 @@
 build_costs:
 	DATA 50,40,3,35,75,60,30,40,25
 
-build_colors: 'replace the two purples with the player color
-	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,PURPLE,PURPLE
+build_colors: 'purples are placeholders; to be replaced with the player color
+	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,GREEN,GREEN
 
 build_dock_x: 'tile location for players 1 and 2, for dock where boats are spawned, x coord
 	DATA 3,20
@@ -91,5 +91,3 @@ build_bitmaps:
 	BITMAP "XXXXXXXX"
 	BITMAP ".XXXXXX."
 	BITMAP "........"
-
-

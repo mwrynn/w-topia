@@ -180,13 +180,6 @@ do_turn_timer:  PROCEDURE
 END
 
 end_turn:   PROCEDURE
-
-    'get the map ownership of the selected tile
-    'GOSUB p1_setup_get_map_tile
-    'GOSUB get_map_tile
-    'GOSUB get_map_ownership
-    'PRINT AT 108 COLOR RED, <>map_ownership_result
-    
     'do end of turn displays + sounds (bing bong bung)
     'bing: scores for this turn that is ending; says SCORES (one char to the left of right most turn number) in white
     PRINT AT 225 COLOR WHITE,"SCORES"

@@ -37,6 +37,7 @@ init:   PROCEDURE
     GOSUB init_game_stats
     GOSUB init_side_button_states
     GOSUB init_num_key_states
+    GOSUB init_dock_map_indexes
     GOSUB init_misc
     
     SIGNED cont_input
@@ -120,4 +121,9 @@ END
 init_misc:  PROCEDURE
     #COLOR_STACK_BG_SHIFT = &0010000000000000
     #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
+END
+
+init_dock_map_indexes:  PROCEDURE
+    GOSUB p1_setup_set_dock_map_index
+    GOSUB p2_setup_set_dock_map_index
 END

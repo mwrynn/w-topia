@@ -58,37 +58,35 @@ map_ownership:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
 
-p1_setup_get_map_tile:  PROCEDURE
+p1_setup_get_map_tile_at_cursor:  PROCEDURE
     x_coord = p1_cur_x
     y_coord = p1_cur_y
 END
 
-p2_setup_get_map_tile:	PROCEDURE
+p2_setup_get_map_tile_at_cursor:	PROCEDURE
     x_coord = p2_cur_x
     y_coord = p2_cur_y
 END
 
-get_map_tile:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
+get_map_tile_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
     map_tile_x = ((x_coord-8+4) - (x_coord-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
     map_tile_y = ((y_coord-8+4) - (y_coord-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
     map_index = 20*map_tile_y + map_tile_x
 END
 
-p1_finish_get_map_tile: PROCEDURE
+p1_finish_get_map_tile_at_cursor: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
-    'p1_map_index = map_index 'don't need?
 END
 
-p2_finish_get_map_tile: PROCEDURE
+p2_finish_get_map_tile_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
-    'p2_map_index = map_index 'don't need?
 END
 
 '''
 
-'PRECONDITION: call get_map_tile first (and therefore call its setup function first)
+'PRECONDITION: call get_map_tile_at_cursor first (and therefore call its setup function first)
 'rightmost two bits indicate ownership, so this returns 0 (no owner) or 1 or 2 for player 1 or 2
 get_map_ownership:  PROCEDURE
     map_ownership_result = map_ownership(20*map_tile_y + map_tile_x) AND &00000011
@@ -108,20 +106,22 @@ END
 'PRECONDITION: these vars are set: building_index, map_index
 'does no validations - assumes validations already done
 set_building:   PROCEDURE
-
+    'the following few lines of comments pertain to drawing the new building correctly without mangling graphics
     'check prev card - if prev has building, then set this bg bit off 
     'check that all subsequent cards have bit off until you hit a non-building, then set that one to on
-
     'have to enable the bit and redraw for the subsequent map location that does NOT have a building
 
     map_index = map_index - 1
     GOSUB has_building
     map_index = map_index + 1
-    PRINT AT 1 COLOR p1_color, <>ret_has_building
-    IF ret_has_building THEN 'last card has a building
+
+    IF ret_has_building THEN 'previous card has a building
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
+        'PRINT AT 3 COLOR p1_color, <>(CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT    
+        PRINT AT 3 COLOR p1_color, <.2>building_index
     ELSE
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) OR #COLOR_STACK_BG_SHIFT
+            PRINT AT 3 COLOR p1_color, <.2>building_index
     END IF
 
     map_index = map_index + 1
@@ -170,9 +170,24 @@ is_dock_tile_occupied:  PROCEDURE
 
     map_index = 20*dock_y + dock_x
 
-    IF #backtab(map_index) = OO THEN ' not sure if one-liner works
+    IF #backtab(map_index) = OO THEN
         is_dock_tile_occupied_result = 1
     ELSE
         is_dock_tile_occupied_result = 0
     END IF 
+END
+
+'''
+p1_setup_set_dock_map_index:  PROCEDURE
+    p1_dock_map_index = 20*build_dock_y(0) + build_dock_x(0)
+END
+
+p2_setup_set_dock_map_index:  PROCEDURE
+    p2_dock_map_index = 20*build_dock_y(1) + build_dock_x(1)
+END
+
+'PRECONDITION: these vars are set: building_index, p_dock_map_index
+'does no validations - assumes validations already done
+set_boat:   PROCEDURE
+    #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
 END

@@ -1,3 +1,5 @@
+'input processing for side buttons
+
 init_side_button_states:    PROCEDURE
     p1_last_side_button_state = 0
     p2_last_side_button_state = 0
