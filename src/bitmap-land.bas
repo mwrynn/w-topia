@@ -1,13 +1,3 @@
-cursor_bitmap:
-    BITMAP "XXXXXXXX"
-    BITMAP "X......X"
-    BITMAP "X......X"
-    BITMAP "X......X"
-    BITMAP "X......X"
-    BITMAP "X......X"
-    BITMAP "X......X"
-    BITMAP "XXXXXXXX"
-
 land_bitmaps:
     BITMAP "XXXXXXXX"
     BITMAP "XXXXXXXX"

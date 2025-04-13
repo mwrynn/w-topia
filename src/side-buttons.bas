@@ -8,15 +8,15 @@ END
 '''
 
 p1_setup_get_side_button_state: PROCEDURE
-    cont_input = cont_input1
+    p_cont_input = p1_cont_input
 END
 
 p2_setup_get_side_button_state: PROCEDURE
-    cont_input = cont_input2
+    p_cont_input = p2_cont_input
 END
 
 get_side_button_state:    PROCEDURE
-    p_side_button_state = cont_input AND $E0
+    p_side_button_state = p_cont_input AND $E0
 END
 
 p1_finish_get_side_button_state: PROCEDURE

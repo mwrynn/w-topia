@@ -1,4 +1,11 @@
-'Intellivision system controller constants
+'*********************************************
+'*            const-intv-cont.bas            *
+'*********************************************
+'*                                           *
+'* Intellivision system controller constants *
+'*                                           *
+'*********************************************
+
 CONST UP               = $04
 CONST DOWN             = $01
 CONST LEFT             = $08

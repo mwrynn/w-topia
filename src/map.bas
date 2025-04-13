@@ -1,3 +1,13 @@
+'********************************************
+'*                  map.bas                 *
+'********************************************
+'*                                          *
+'*  map-related constants, map locations,   *
+'*  functions                               *
+'*                                          *
+'********************************************
+
+'defines map card constants to be used in a map
 CONST OO = 0
 CONST XX = CARD_BASELINE + 1 * CARD_MULT + TAN
 CONST AA = CARD_BASELINE + 2 * CARD_MULT + TAN
@@ -17,7 +27,7 @@ CONST NN = CARD_BASELINE +15 * CARD_MULT + TAN
 CONST PP = CARD_BASELINE +16 * CARD_MULT + TAN
 CONST QQ = CARD_BASELINE +17 * CARD_MULT + TAN
 
-'defines the graphics (cards) to be used for each locations
+'defines the graphics (cards) to be used for each location
 map_cards:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
@@ -36,11 +46,6 @@ map_cards:
 CONST YY = 1
 CONST ZZ = 2
 
-'building plus ownership algorithm:
-'player 1 ownership is rightmost bit on, second-to-rightmost bit off
-'player 2 ownership is rightmost bit off, second-to-rightmost bit on
-'building number 1-7 shifted over by two bits, ORed with ownership two bits
-
 'potential memory optimization: maybe make it a little more sparse?
     'for example we don't need to store the first two lines so we could just assume for
     'a lookup of row 0 or 1 (and also whatever indexes of the last three rows), it's always OO
@@ -58,6 +63,8 @@ map_ownership:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
 
+'''
+
 p1_setup_get_map_tile_at_cursor:  PROCEDURE
     x_coord = p1_cur_x
     y_coord = p1_cur_y
@@ -68,6 +75,20 @@ p2_setup_get_map_tile_at_cursor:	PROCEDURE
     y_coord = p2_cur_y
 END
 
+'get_map_tile_at_cursor: gets the map tile that the cursor is most closely placed over
+'PRECONDITIONS:
+'   call p[1|2]_setup_get_map_tile_at_cursor
+'   alternatively, if already in a p1/p2-specific flow, x_coord, y_coord must have been set
+'PARAMETERS:
+'   x_coord: pixel coordinate of the cursor's upper left corner for, x dimension
+'   y_coord: pixel coordinate of the cursor's upper left corner for, y dimension
+'RETURNS:
+'   map_tile_x: x tile index of the tile that the cursor is most closely placed over
+'   map_tile_y: y tile index of the tile that the cursor is most closely placed over
+'   map_index: derived from map_tile_x and map_tile_y, the one-dimensional index of the tile
+'       (since we need to access the data via a single index)
+'NOTES:
+'   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
 get_map_tile_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
     map_tile_x = ((x_coord-8+4) - (x_coord-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
     map_tile_y = ((y_coord-8+4) - (y_coord-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
@@ -77,22 +98,48 @@ END
 p1_finish_get_map_tile_at_cursor: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
+    p1_map_index = map_index
 END
 
 p2_finish_get_map_tile_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
+    p2_map_index = map_index
 END
 
 '''
 
-'PRECONDITION: call get_map_tile_at_cursor first (and therefore call its setup function first)
-'rightmost two bits indicate ownership, so this returns 0 (no owner) or 1 or 2 for player 1 or 2
+p1_setup_get_map_ownership: PROCEDURE
+    map_index = p1_map_index
+END
+
+p2_setup_get_map_ownership: PROCEDURE
+    map_index = p2_map_index
+END
+
+'get_map_ownership: gets the owner of a tile given the one-dimensional map_index,
+    'by looking up in DATA array map_ownership
+'PRECONDITIONS:
+    'call p[1|2]_setup_get_map_ownership
+    'alternatively, if already in a p1/p2-specific flow, map_index must have been set
+'PARAMETERS:
+    'map_index: the one-dimensional index of the tile in the map for which the owner is returned
+'RETURNS:
+    'map_ownership_result: the owner bits, 0 = no owner, 1 = player 1, 2 = player 2
 get_map_ownership:  PROCEDURE
-    map_ownership_result = map_ownership(20*map_tile_y + map_tile_x) AND &00000011
+    map_ownership_result = map_ownership(map_index) AND &00000011
+END
+
+p1_finish_get_map_ownership: PROCEDURE
+    p1_map_ownership_result = map_ownership_result
+END
+
+p2_finish_get_map_ownership: PROCEDURE
+    p2_map_ownership_result = map_ownership_result
 END
 
 '''
+
 p1_setup_set_building:  PROCEDURE
     map_tile_x = p1_map_tile_x
     map_tile_y = p1_map_tile_y
@@ -103,41 +150,61 @@ p2_setup_set_building:  PROCEDURE
     map_tile_y = p2_map_tile_y
 END
 
-'PRECONDITION: these vars are set: building_index, map_index
-'does no validations - assumes validations already done
+'set_building: sets a building card in #backtab (background table) at the position indicated by map_index
+'PRECONDITIONS:
+    'call p[1|2]_setup_set_building
+    'alternatively, if already in a p1/p2-specific flow, building_index and map_index must have been set
+    'assumes all validations (ownership, land vs. water checks) have already been done
+'PARAMETERS:
+    'building_index: the index of which building to place
+    'map_index: the one-dimensional index of the tile in the map for which the building is be placed
+'RETURNS:
+    'nothing (may be worth returning a success status?)
 set_building:   PROCEDURE
-    'the following few lines of comments pertain to drawing the new building correctly without mangling graphics
-    'check prev card - if prev has building, then set this bg bit off 
-    'check that all subsequent cards have bit off until you hit a non-building, then set that one to on
-    'have to enable the bit and redraw for the subsequent map location that does NOT have a building
+    'much of this proc has to do with handling background bit complexity
+    'the logic:
+    'check prev card - if prev has building, then set the background bit to off for the new building's card
+    'check that all subsequent cards have background bit off until you hit a non-building, then set that one to on
+    'have to enable the bit and redraw for the subsequent map locations that do NOT have a building
 
+    'look back to the previous card and check if there is a building
     map_index = map_index - 1
     GOSUB has_building
+
+    'put map_index back to where we want to set the new building
     map_index = map_index + 1
 
     IF ret_has_building THEN 'previous card has a building
+        'set the new building at map_index with background bit off
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
-        'PRINT AT 3 COLOR p1_color, <>(CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT    
-        PRINT AT 3 COLOR p1_color, <.2>building_index
     ELSE
+        'set the new building at map_index with background bit on
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) OR #COLOR_STACK_BG_SHIFT
-            PRINT AT 3 COLOR p1_color, <.2>building_index
     END IF
 
-    map_index = map_index + 1
-    GOSUB has_building
+    PRINT AT 3 COLOR p1_color, <.2>building_index 'debug
 
-    'subsequent cards' bg bits
-    WHILE ret_has_building = 1
-        #backtab(map_index) = #backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
+    DO
         map_index = map_index + 1
         GOSUB has_building
-    WEND 
+
+        IF ret_has_building = 1 THEN
+          #BACKTAB(map_index) = #BACKTAB(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
+        END IF
+    LOOP WHILE ret_has_building = 1
 
     #backtab(map_index) = #backtab(map_index) OR #COLOR_STACK_BG_SHIFT
 END
 
-'PRECONDITION: map_index is set
+'''
+
+'checks whether given tile has a building
+'PRECONDITIONS:
+    'map_index is set
+'PARAMETERS
+    'map_index: the backtab index for which to check for a building
+'RETURNS
+    'ret_has_building: 1 if a building was found at map_index, 0 if not found
 has_building:   PROCEDURE
     IF (#backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT) >= (CARD_BASELINE + CARD_NUM_BUILD*CARD_MULT) THEN
         ret_has_building = 1
@@ -146,13 +213,11 @@ has_building:   PROCEDURE
     ret_has_building = 0
 END 
 
+'''
+
 p1_setup_is_dock_tile_occupied: PROCEDURE
     dock_x = build_dock_x(1)
     dock_y = build_dock_y(1)
-END
-
-p1_finish_is_dock_tile_occupied: PROCEDURE
-    p1_is_dock_tile_occupied_result = is_dock_tile_occupied_result
 END
 
 p2_setup_is_dock_tile_occupied: PROCEDURE
@@ -160,9 +225,15 @@ p2_setup_is_dock_tile_occupied: PROCEDURE
     dock_y = build_dock_y(2)
 END
 
-p2_finish_is_dock_tile_occupied: PROCEDURE
-    p2_is_dock_tile_occupied_result = is_dock_tile_occupied_result
-END
+'checks whether the dock tile is already occupied by a boat
+'PRECONDITIONS:
+    'p[1|2]_setup_is_dock_tile_occupied has been called
+    'alternatively, if already in a p1/p2-specific flow, dock_x and dock_y must have been set
+'PARAMETERS
+    'dock_x: x position (index, not pixels) of the dock to check 
+    'dock_y: y position (index, not pixels) of the dock to check
+'RETURNS
+    'ret_is_dock_tile_occupied: 1 if a boat was found at the dock position, 0 if not found
 
 is_dock_tile_occupied:  PROCEDURE
     map_tile_x = ((dock_x-8+4) - (dock_x-8+4) % 8) / 8 
@@ -171,10 +242,18 @@ is_dock_tile_occupied:  PROCEDURE
     map_index = 20*dock_y + dock_x
 
     IF #backtab(map_index) = OO THEN
-        is_dock_tile_occupied_result = 1
+        ret_is_dock_tile_occupied = 1
     ELSE
-        is_dock_tile_occupied_result = 0
+        ret_is_dock_tile_occupied = 0
     END IF 
+END
+
+p1_finish_is_dock_tile_occupied: PROCEDURE
+    p1_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
+END
+
+p2_finish_is_dock_tile_occupied: PROCEDURE
+    p2_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
 END
 
 '''

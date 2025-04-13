@@ -1,4 +1,11 @@
-'Intellivision system sprite constants
+'*****************************************
+'*        const-intv-sprite.bas          *
+'*****************************************
+'*                                       *
+'* Intellivision system sprite constants *
+'*                                       *
+'*****************************************
+
 CONST X_NO_INTERACT  = $0000
 CONST X_INTERACT     = $0100
 CONST X_VISIBLE      = $0200

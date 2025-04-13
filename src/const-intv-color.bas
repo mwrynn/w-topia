@@ -1,4 +1,11 @@
-'Intellivision system color constants
+'*********************************************
+'*           const-intv-color.bas            *
+'*********************************************
+'*                                           *
+'*   Intellivision system color constants    *
+'*                                           *
+'*********************************************
+
 CONST BLACK = 0
 CONST BLUE = 1
 CONST RED = 2

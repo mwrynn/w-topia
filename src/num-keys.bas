@@ -24,11 +24,11 @@ END
 
 '''
 p1_setup_get_num_key_press: PROCEDURE
-    cont_input_key = cont_input1_key
+    p_cont_input_key = p1_cont_input_key
 END
 
 p2_setup_get_num_key_press: PROCEDURE
-    cont_input_key = cont_input2_key
+    p_cont_input_key = p2_cont_input_key
 END
 
 p1_finish_get_num_key_press: PROCEDURE
