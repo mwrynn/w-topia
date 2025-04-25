@@ -4,7 +4,7 @@
 '*                                             *
 '* data and functions pertaining to the things *
 '* players build (buildings, boats, rebels)    *
-'* (bitamps are in bitmap-build.bas)           *
+'* (bmps of these things in bitmap-build.bas)  *
 '*                                             *
 '* 0-5 are buildings:                          *
 '* 0: Fort                                     *

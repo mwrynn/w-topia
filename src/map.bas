@@ -2,8 +2,8 @@
 '*                  map.bas                 *
 '********************************************
 '*                                          *
-'*  map-related constants, map locations,   *
-'*  functions                               *
+'*  map-related constants, map locations    *
+'*  and functions                           *
 '*                                          *
 '********************************************
 
@@ -27,7 +27,8 @@ CONST NN = CARD_BASELINE +15 * CARD_MULT + TAN
 CONST PP = CARD_BASELINE +16 * CARD_MULT + TAN
 CONST QQ = CARD_BASELINE +17 * CARD_MULT + TAN
 
-'defines the graphics (cards) to be used for each location
+'map_cards: 2D array that defines the land graphics (cards) to be used for each location
+'OO means the sea and everythinge else is a land card
 map_cards:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
@@ -46,9 +47,11 @@ map_cards:
 CONST YY = 1
 CONST ZZ = 2
 
-'potential memory optimization: maybe make it a little more sparse?
-    'for example we don't need to store the first two lines so we could just assume for
-    'a lookup of row 0 or 1 (and also whatever indexes of the last three rows), it's always OO
+'map_ownership: 2D array that defines the owner of each land location
+'YY means player 1, ZZ means player 2, and OO means nothing
+'potential memory optimization: maybe make it sparse?
+'for example we don't need to store the first two lines so we could just assume for
+'a lookup of row 0 or 1 (and also whatever indexes of the last three rows), it's always OO
 map_ownership:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
@@ -75,7 +78,7 @@ p2_setup_get_map_tile_at_cursor:	PROCEDURE
     y_coord = p2_cur_y
 END
 
-'get_map_tile_at_cursor: gets the map tile that the cursor is most closely placed over
+'PROCEDURE get_map_tile_at_cursor: gets the map tile that the cursor is most closely placed over
 'PRECONDITIONS:
 '   call p[1|2]_setup_get_map_tile_at_cursor
 '   alternatively, if already in a p1/p2-specific flow, x_coord, y_coord must have been set
@@ -117,7 +120,7 @@ p2_setup_get_map_ownership: PROCEDURE
     map_index = p2_map_index
 END
 
-'get_map_ownership: gets the owner of a tile given the one-dimensional map_index,
+'PROCEDURE: get_map_ownership: gets the owner of a tile given the one-dimensional map_index,
     'by looking up in DATA array map_ownership
 'PRECONDITIONS:
     'call p[1|2]_setup_get_map_ownership
@@ -150,7 +153,7 @@ p2_setup_set_building:  PROCEDURE
     map_tile_y = p2_map_tile_y
 END
 
-'set_building: sets a building card in #backtab (background table) at the position indicated by map_index
+'PROCEDURE set_building: sets a building card in #backtab (background table) at the position indicated by map_index
 'PRECONDITIONS:
     'call p[1|2]_setup_set_building
     'alternatively, if already in a p1/p2-specific flow, building_index and map_index must have been set
@@ -160,6 +163,8 @@ END
     'map_index: the one-dimensional index of the tile in the map for which the building is be placed
 'RETURNS:
     'nothing (may be worth returning a success status?)
+'MODIFIES:
+    '#backtab - sets the new building of building_index at map_index
 set_building:   PROCEDURE
     'much of this proc has to do with handling background bit complexity
     'the logic:
@@ -198,7 +203,7 @@ END
 
 '''
 
-'checks whether given tile has a building
+'PROCEDURE has_building: checks whether given tile has a building
 'PRECONDITIONS:
     'map_index is set
 'PARAMETERS
@@ -225,7 +230,7 @@ p2_setup_is_dock_tile_occupied: PROCEDURE
     dock_y = build_dock_y(2)
 END
 
-'checks whether the dock tile is already occupied by a boat
+'PROCEDURE is_dock_tile_occupied: checks whether the dock tile is already occupied by a boat
 'PRECONDITIONS:
     'p[1|2]_setup_is_dock_tile_occupied has been called
     'alternatively, if already in a p1/p2-specific flow, dock_x and dock_y must have been set
@@ -257,16 +262,16 @@ p2_finish_is_dock_tile_occupied: PROCEDURE
 END
 
 '''
-p1_setup_set_dock_map_index:  PROCEDURE
-    p1_dock_map_index = 20*build_dock_y(0) + build_dock_x(0)
-END
 
-p2_setup_set_dock_map_index:  PROCEDURE
-    p2_dock_map_index = 20*build_dock_y(1) + build_dock_x(1)
-END
-
-'PRECONDITION: these vars are set: building_index, p_dock_map_index
-'does no validations - assumes validations already done
+'PROCEDURE set_boat: sets boat at location
+'   'oes no validations; assumes already done
+'PRECONDITION:
+'   these vars are set: building_index, p_dock_map_index
+'PARAMETERS:
+'   building_index: building index of the boat to set, must only be one of the boat values, not a true "building"
+'       such as a factory; does no validation
+'   p_dock_map_index: location (card index) to set buliding at
+'MODIFIES: #backtab state to set the boat indicated by building_index at p_dock_map_index
 set_boat:   PROCEDURE
     #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
 END

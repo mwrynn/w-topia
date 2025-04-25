@@ -36,7 +36,6 @@ init:   PROCEDURE
     GOSUB init_misc
     
     SIGNED p_cont_input
-    'GOSUB p1_show_money
 END
     
 init_cursor:    PROCEDURE
@@ -104,7 +103,7 @@ init_player_stats:  PROCEDURE
     #p2_population = STARTING_POPULATION
 
     #p1_last_turns_score = 0
-    #p2_last_turns_score = 1 'TODO not sure why I made this 1, look into
+    #p2_last_turns_score = 0 
 END
 
 init_game_stats:  PROCEDURE
@@ -119,6 +118,15 @@ init_misc:  PROCEDURE
 END
 
 init_dock_map_indexes:  PROCEDURE
-    GOSUB p1_setup_set_dock_map_index
-    GOSUB p2_setup_set_dock_map_index
+    GOSUB p1_init_dock_map_index
+    GOSUB p2_init_dock_map_index
 END
+
+p1_init_dock_map_index:  PROCEDURE
+    p1_dock_map_index = 20*build_dock_y(0) + build_dock_x(0)
+END
+
+p2_init_dock_map_index:  PROCEDURE
+    p2_dock_map_index = 20*build_dock_y(1) + build_dock_x(1)
+END
+
