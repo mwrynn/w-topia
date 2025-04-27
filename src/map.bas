@@ -187,8 +187,6 @@ set_building:   PROCEDURE
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) OR #COLOR_STACK_BG_SHIFT
     END IF
 
-    PRINT AT 3 COLOR p1_color, <.2>building_index 'debug
-
     DO
         map_index = map_index + 1
         GOSUB has_building
@@ -221,13 +219,11 @@ END
 '''
 
 p1_setup_is_dock_tile_occupied: PROCEDURE
-    dock_x = build_dock_x(1)
-    dock_y = build_dock_y(1)
+    p_dock_map_index=p1_dock_map_index
 END
 
 p2_setup_is_dock_tile_occupied: PROCEDURE
-    dock_x = build_dock_x(2)
-    dock_y = build_dock_y(2)
+    p_dock_map_index=p2_dock_map_index
 END
 
 'PROCEDURE is_dock_tile_occupied: checks whether the dock tile is already occupied by a boat
@@ -235,21 +231,15 @@ END
     'p[1|2]_setup_is_dock_tile_occupied has been called
     'alternatively, if already in a p1/p2-specific flow, dock_x and dock_y must have been set
 'PARAMETERS
-    'dock_x: x position (index, not pixels) of the dock to check 
-    'dock_y: y position (index, not pixels) of the dock to check
+    'p_dock_map_index: index (not pixel location) of the dock to check 
 'RETURNS
     'ret_is_dock_tile_occupied: 1 if a boat was found at the dock position, 0 if not found
 
 is_dock_tile_occupied:  PROCEDURE
-    map_tile_x = ((dock_x-8+4) - (dock_x-8+4) % 8) / 8 
-    map_tile_y = ((dock_y-8+4) - (dock_y-8+4) % 8) / 8 
-
-    map_index = 20*dock_y + dock_x
-
-    IF #backtab(map_index) = OO THEN
-        ret_is_dock_tile_occupied = 1
-    ELSE
+    IF #backtab(p_dock_map_index) = OO THEN
         ret_is_dock_tile_occupied = 0
+    ELSE
+        ret_is_dock_tile_occupied = 1
     END IF 
 END
 

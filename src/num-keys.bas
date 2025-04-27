@@ -193,10 +193,18 @@ END
 'would like to move the build-related functions to build.bas
 'but they don't work positioned there - lol. figure out why (TODO)
 
-'builds the building at cursor location
+'builds the building at cursor location, or a boat at the dock (or auto-adjusted close-to-dock location)
 'PRECONDITIONS:
-    'p_registered_command already set
-    '#p_money already set to #p1_money or #p2_money
+    'params all set
+'PARAMETERS:
+    'p_registered_command: 
+    '#p_money: 
+    'player: number of current player
+    'p_dock_map_index: index of current player's dock in case a dock is being built
+'POSTCONDITIONS:
+    'none
+'RETURNS:
+    'none
 'validates whether location is valid, i.e. no preexisting building exists and checks ownership
 'assumes that having enough money (#p_money) has already been checked
 'deducts money from #p_money; after calling this, caller must set #p[1|2]_money accordingly
@@ -219,6 +227,7 @@ build:  PROCEDURE
     ELSEIF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
         GOSUB can_build_at_dock
         IF can_build_at_dock_result THEN
+            PRINT AT 3 COLOR p1_color, "X"
             #p_money = #p_money - build_costs(building_index)
             GOSUB set_boat
         END IF
@@ -269,7 +278,6 @@ END
 
 'does not consider cost
 'has no setup/finish funcs
-''''WIP
 'PROCEDURE can_build_at_dock: helper function to check if can build boat at a given dock location
     'considers:
         'owner of that tile
@@ -278,23 +286,30 @@ END
         'if player has enough money
     'does not actually create/set the building
 'PRECONDITIONS:
-    'p_registered_command is set
+    'parameters have all been set
 'POSTCONDITIONS:
     'NONE
 'PARAMETERS:
     'p_registered_command: command indicating what is being attempted to build (or other command)
     'player: player number to be used in ownership check
-    'dock_x: x position (not in pixels but in "tiles") of the dock to check
-    'dock_y: y position (not in pixels but in "tiles") of the dock to check
+    'p_dock_map_index: dock location (not pixels but "tile")
 'RETURNS:
     'can_build_at_dock_result (1/0)
 
 can_build_at_dock:    PROCEDURE
-    IF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
+    IF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN    
+        PRINT AT 3 COLOR p1_color, "A"
         GOSUB is_dock_tile_occupied
-        'TODO: check if dock space is occupied. perhaps this or another function can return the first unoccupied space (follow the original Utopia's logic)
+        IF ret_is_dock_tile_occupied = 1 THEN
+            PRINT AT 3 COLOR p1_color, "B"
+            can_build_at_dock_result = 0
+            RETURN
+        END IF
+        PRINT AT 3 COLOR p1_color, "C"
+        can_build_at_dock_result = 1
         RETURN
     END IF
+    PRINT AT 3 COLOR p1_color, "D"
     can_build_at_dock_result = 0
 END
 
