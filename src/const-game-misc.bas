@@ -10,5 +10,5 @@
 CONST FRAMES_PER_SEC = 60
 
 'the following should eventually be user definable (therefore not consts)
-CONST TURNS_LEFT = 30
-CONST SECONDS_PER_TURN = 10
+CONST CONST_TURNS_LEFT = 30
+CONST CONST_SECONDS_PER_TURN = 10

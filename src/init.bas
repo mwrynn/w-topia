@@ -107,8 +107,8 @@ init_player_stats:  PROCEDURE
 END
 
 init_game_stats:  PROCEDURE
-    turns_left = TURNS_LEFT
-    seconds_per_turn = SECONDS_PER_TURN
+    turns_left = CONST_TURNS_LEFT
+    seconds_per_turn = CONST_SECONDS_PER_TURN
     seconds_left = seconds_per_turn
 END
 

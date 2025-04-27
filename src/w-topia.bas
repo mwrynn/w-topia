@@ -124,5 +124,7 @@ end_turn:   PROCEDURE
     PRINT AT 225 COLOR WHITE,"       "
     GOSUB play_sound_bung
 
-    seconds_left = max_seconds_left
+    seconds_left = seconds_per_turn
+    turns_left = turns_left - 1
+    'TODO: check if end of game after decrementing turns_left and handle that
 END
