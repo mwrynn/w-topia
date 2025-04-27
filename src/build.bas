@@ -1,89 +1,36 @@
+'***********************************************
+'*                  build.bas                  *
+'***********************************************
+'*                                             *
+'* data and functions pertaining to the things *
+'* players build (buildings, boats, rebels)    *
+'* (bmps of these things in bitmap-build.bas)  *
+'*                                             *
+'* 0-5 are buildings:                          *
+'* 0: Fort                                     *
+'* 1: Factory                                  *
+'* 2: Crops                                    *
+'* 3: School                                   *
+'* 4: Hospital                                 *
+'* 5: Housing Project                          *
+'*                                             *
+'* 6: Rebel                                    *
+'* 7: PT Boat                                  *
+'* 8: Fishing Boat                             *
+'*                                             *
+'* These indexes all correspond to the         *
+'* controller button minus 1                   *
+'***********************************************
+
 build_costs:
 	DATA 50,40,3,35,75,60,30,40,25
 
-build_colors: 'replace the two purples with the player color
-	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,PURPLE,PURPLE
+build_colors: 'purples are placeholders; to be replaced with the player color
+	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,GREEN,GREEN
 
-build_bitmaps:
-    BITMAP "........"
-    BITMAP "X.X.X.X."
-    BITMAP "XXXXXXX."
-    BITMAP ".XXXXX.."
-    BITMAP ".XXXXX.."
-    BITMAP ".XXXXX.."
-    BITMAP ".XXXXX.."
-    BITMAP ".XXXXX.."
+build_dock_x: 'tile location for players 1 and 2, for dock where boats are spawned, x coord
+	DATA 3,20
 
-    BITMAP "........"
-    BITMAP "X.X..X.X"
-    BITMAP "X.X..X.X"
-    BITMAP "X.X..X.X"
-    BITMAP "XXXXXXXX"
-    BITMAP "X.XXXX.X"
-    BITMAP "XXXXXXXX"
-    BITMAP "XXX..XXX"
-
-	BITMAP "........"
-	BITMAP "X.X.X.X."
-	BITMAP ".X...X.."
-	BITMAP "XXXXXXXX"
-	BITMAP "........"
-	BITMAP "X.X.X.X."
-	BITMAP ".X...X.."
-	BITMAP "XXXXXXXX"
-
-	BITMAP "........"
-	BITMAP "XXXXXXXX"
-	BITMAP "...XX..."
-	BITMAP "..XXXX.."
-	BITMAP "..XXXX.."
-	BITMAP ".XXXXXX."
-	BITMAP ".XXXXXX."
-	BITMAP "XXXXXXXX"
-
-	BITMAP "...XX..."
-	BITMAP "...XX..."
-	BITMAP "...XX..."
-	BITMAP "XXXXXXXX"
-	BITMAP "XXXXXXXX"
-	BITMAP "...XX..."
-	BITMAP "...XX..."
-	BITMAP "...XX..."
-
-	BITMAP "...XX..."
-	BITMAP "..XXXX.."
-	BITMAP ".XX..XX."
-	BITMAP "XXXXXXXX"
-	BITMAP "XXXXXXXX"
-	BITMAP "X..XXXXX"
-	BITMAP "X..XX.XX"
-	BITMAP "XXXXX.XX"
-
-	BITMAP "....XX.."
-	BITMAP "....XX.."
-	BITMAP "...X...X"
-	BITMAP ".XXXXXX."
-	BITMAP ".XX..X.."
-	BITMAP "XXX.X..."
-	BITMAP "..X....."
-	BITMAP "..X....."
-
-	BITMAP "........"
-	BITMAP "........"
-	BITMAP "....X..."
-	BITMAP "...XXX.."
-	BITMAP ".XXXXXXX"
-	BITMAP "..XXXXX."
-	BITMAP "........"
-	BITMAP "........"
-
-	BITMAP "........"
-	BITMAP "..X....."
-	BITMAP "..X....X"
-	BITMAP "..XXX.X."
-	BITMAP "XXXXXXXX"
-	BITMAP "XXXXXXXX"
-	BITMAP ".XXXXXX."
-	BITMAP "........"
-
+build_dock_y: 'tile location for players 1 and 2, for dock where boats are spawned, y coord
+	DATA 7,6
 

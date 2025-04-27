@@ -1,23 +1,18 @@
+'**********************************************
+'*                 init.bas                   *
+'**********************************************
+'*                                            *
+'*  initializes various variables such as     *
+'*  colors, cursor positions, global data     *
+'*  (turns, seconds per turn, etc.)           *
+'*  Also initializes graphics.                *
+'*                                            *
+'*  The caller should just call the init proc *
+'*  as the rest are "private"                 *
+'*                                            *
+'**********************************************
+
 init:   PROCEDURE
-    'player 1 cursor constants
-    CONST P1_CUR_STARTING_X = 20
-    CONST P1_CUR_STARTING_Y = 20
-
-    'player 2 cursor constants
-    CONST P2_CUR_STARTING_X = 100
-    CONST P2_CUR_STARTING_Y = 20
-
-    'general cursor constants
-    CONST CUR_MOVE_THRESHOLD = 6 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
-    
-    'game card constants
-    CONST CARD_NUM_CURSOR = 0
-    CONST CARD_NUM_LAND   = 1  'there are many but this is the first one
-    CONST CARD_NUM_LAND_2 = 17 'second block of land cards, because limit of 16 cards loaded at a time
-    CONST CARD_NUM_BUILD  = 18 
-
-    CONST FRAMES_PER_SEC = 60
-
     'init graphics
     CLS
     MODE 0, BLUE, TAN, BLUE, TAN
@@ -37,10 +32,10 @@ init:   PROCEDURE
     GOSUB init_game_stats
     GOSUB init_side_button_states
     GOSUB init_num_key_states
+    GOSUB init_dock_map_indexes
     GOSUB init_misc
     
-    SIGNED cont_input
-    'GOSUB p1_show_money
+    SIGNED p_cont_input
 END
     
 init_cursor:    PROCEDURE
@@ -98,26 +93,40 @@ init_player_colors: PROCEDURE
 END
 
 init_player_stats:  PROCEDURE
-    #p1_money = 500 'just for now
-    #p2_money = 500
+    #p1_money = STARTING_MONEY 
+    #p2_money = STARTING_MONEY
 
     #p1_score = 0
     #p2_score = 0
 
-    #p1_population = 1000
-    #p2_population = 1000
+    #p1_population = STARTING_POPULATION
+    #p2_population = STARTING_POPULATION
 
     #p1_last_turns_score = 0
-    #p2_last_turns_score = 1
+    #p2_last_turns_score = 0 
 END
 
 init_game_stats:  PROCEDURE
-    turns_left = 30
-    max_seconds_left = 10
-    seconds_left = max_seconds_left
+    turns_left = TURNS_LEFT
+    seconds_per_turn = SECONDS_PER_TURN
+    seconds_left = seconds_per_turn
 END
 
 init_misc:  PROCEDURE
     #COLOR_STACK_BG_SHIFT = &0010000000000000
     #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
 END
+
+init_dock_map_indexes:  PROCEDURE
+    GOSUB p1_init_dock_map_index
+    GOSUB p2_init_dock_map_index
+END
+
+p1_init_dock_map_index:  PROCEDURE
+    p1_dock_map_index = 20*build_dock_y(0) + build_dock_x(0)
+END
+
+p2_init_dock_map_index:  PROCEDURE
+    p2_dock_map_index = 20*build_dock_y(1) + build_dock_x(1)
+END
+
