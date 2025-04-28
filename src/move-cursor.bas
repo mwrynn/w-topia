@@ -16,7 +16,7 @@ END
 
 p2_setup_move_cursor:  PROCEDURE
     p_cont_input = p2_cont_input
-    `_move_points = p2_cur_x_move_points
+    p_cur_x_move_points = p2_cur_x_move_points
     p_cur_y_move_points = p2_cur_y_move_points
     p_cur_x = p2_cur_x
     p_cur_y = p2_cur_y
