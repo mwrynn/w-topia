@@ -7,31 +7,33 @@ GOTO main
 'note: cannot give INCLUDE a relative path, just a filename; so don't try to refactor :)
 'note: you also cannot have recursive includes,
 'therefore we could not make for example a const-all.bas that includes all the following
-includes_const:
-    INCLUDE "const-intv-color.bas"
-    INCLUDE "const-intv-sprite.bas"
-    INCLUDE "const-intv-cont.bas"
-    INCLUDE "const-intv-card.bas"
-    INCLUDE "const-game-screen.bas"
-    INCLUDE "const-game-player.bas"
-    INCLUDE "const-game-card.bas"
-    INCLUDE "const-game-misc.bas"
 
-includes_bitmap:
-    INCLUDE "bitmap-cursor.bas"
-    INCLUDE "bitmap-land.bas"
-    INCLUDE "bitmap-build.bas"
+'includes: const
+INCLUDE "const-intv-color.bas"
+INCLUDE "const-intv-sprite.bas"
+INCLUDE "const-intv-cont.bas"
+INCLUDE "const-intv-card.bas"
+INCLUDE "const-game-screen.bas"
+INCLUDE "const-game-player.bas"
+INCLUDE "const-game-card.bas"
+INCLUDE "const-game-sprite.bas"
+INCLUDE "const-game-misc.bas"
 
-includes_other:
-    INCLUDE "init.bas"
-    INCLUDE "sound.bas"
-    INCLUDE "move-cursor.bas"
-    INCLUDE "side-buttons.bas"
-    INCLUDE "map.bas"
-    INCLUDE "cursor-move-data.bas"
-    INCLUDE "build.bas"
-    INCLUDE "num-keys.bas"
-    INCLUDE "status-bar.bas"
+'includes: bitmap
+INCLUDE "bitmap-cursor.bas"
+INCLUDE "bitmap-land.bas"
+INCLUDE "bitmap-build.bas"
+
+'includes: other
+INCLUDE "init.bas"
+INCLUDE "sound.bas"
+INCLUDE "move-cursor.bas"
+INCLUDE "side-buttons.bas"
+INCLUDE "map.bas"
+INCLUDE "cursor-move-data.bas"
+INCLUDE "build.bas"
+INCLUDE "num-keys.bas"
+INCLUDE "status-bar.bas"
 
 main:
     GOSUB init

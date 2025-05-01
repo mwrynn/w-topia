@@ -8,6 +8,7 @@
 '*                                          *
 '********************************************
 
+CONST KEY_CURSOR_SELECT = 1
 CONST KEY_FORT          = 1
 CONST KEY_FACTORY       = 2
 CONST KEY_CROPS         = 3
@@ -108,7 +109,7 @@ p2_setup_process_key_press: PROCEDURE
     p_last_num_key_pressed = p2_last_num_key_pressed
 
     'need to set dock position so that we can hand off to a player-agnostic flow from here
-    p_dock_map_index = p1_dock_map_index
+    p_dock_map_index = p2_dock_map_index
 
     'setups for some procs in map.bas - I don't like it being here but it needs to call the map procs before returning to the "p#" context
     GOSUB p2_setup_get_map_tile_at_cursor
@@ -140,7 +141,6 @@ process_key_press:  PROCEDURE
     'ignore keypresses spanning multiple iterations - player holding the key for longer than exactly one frame is expected
     IF p_key_pressed = p_last_num_key_pressed THEN 'this will be checked a ton - any room for optimization?
         RETURN
-
     ELSEIF p_key_pressed = KEY_NOTHING THEN
         'lock in building selection command once the player releases the key
         IF p_last_num_key_pressed >= 1 AND p_last_num_key_pressed <= 9 THEN 
@@ -168,6 +168,8 @@ process_key_press:  PROCEDURE
             GOSUB invalid_key_press
             RETURN
         END IF
+    ELSEIF p_key_pressed = KEY_CURSOR_SELECT THEN
+        'if current state is cursor and 
     END IF
 
     p_last_num_key_pressed = p_key_pressed
@@ -201,6 +203,8 @@ END
     '#p_money: 
     'player: number of current player
     'p_dock_map_index: index of current player's dock in case a dock is being built
+    'p_cur_x: map pixel in x dimension (practically speaking, this is tbe top-left pixel of the cursor)
+    'p_cur_y: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
 'POSTCONDITIONS:
     'none
 'RETURNS:
@@ -248,14 +252,14 @@ END
 'PRECONDITIONS:
     'p_registered_command is set
     'p#_setup_get_map_tile_at_cursor already called
-        'therefore setting x_coord, y_coord
+        'therefore setting p_cur_x, p_cur_y
     'player is set
 'POSTCONDITIONS:
     'NONE
 'PARAMETERS:
     'p_registered_command: command indicating what is being attempted to build (or other command)
-    'x_coord: map pixel in x dimension (practically speaking, this is tbe top-left pixel of the cursor)
-    'y_coord: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
+    'p_cur_x: map pixel in x dimension (practically speaking, this is tbe top-left pixel of the cursor)
+    'p_cur_y: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
     'player: player number to be used in ownership check
 'RETURNS:
     'can_build_at_cursor_result (1/0)

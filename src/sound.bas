@@ -77,7 +77,7 @@ play_sound_bzzt:    PROCEDURE
 END
 
 'play gentle "click" sound to indicate input received successfully
-'TODO: make this play the right sound; placeholder for nw
+'TODO: make this play the right sound; placeholder for now
 play_sound_click:   PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
         SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10

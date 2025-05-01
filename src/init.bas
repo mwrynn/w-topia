@@ -30,7 +30,6 @@ init:   PROCEDURE
     GOSUB init_cursor
     GOSUB init_player_stats
     GOSUB init_game_stats
-    GOSUB init_side_button_states
     GOSUB init_num_key_states
     GOSUB init_dock_map_indexes
     GOSUB init_misc
@@ -54,7 +53,6 @@ init_cursor:    PROCEDURE
     p1_cur_y_move_points = 0
     p2_cur_x_move_points = 0
     p2_cur_y_move_points = 0
-    CONST CUR_X_PARAMS = X_NO_INTERACT + X_VISIBLE + X_NORMAL_SIZE
     #p1_cur_f = CARD_BASELINE + p1_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
 
     'to avoid using a scarce 16-bit int just for high bit.
