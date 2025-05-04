@@ -101,13 +101,13 @@ END
 p1_finish_get_map_tile_at_cursor: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
-    'p1_map_index = map_index
+    'p1_map_index = map_index 'not used but can uncomment if that changes
 END
 
 p2_finish_get_map_tile_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
-   'p2_map_index = map_index
+    'p2_map_index = map_index 'not used but can uncomment if that changes
 END
 
 '''
@@ -132,6 +132,31 @@ END
 get_map_ownership:  PROCEDURE
     map_ownership_result = map_ownership(map_index) AND &00000011
 END
+
+'''
+'PROCEDURE: get_boat_ownership gets the player number of the boat at map_index
+'PRECONDITIONS:
+    'map_index must have been set
+'PARAMETERS:
+    'map_index: the one-dimensional index of the tile in the map at which the boat's owner is returned
+'RETURNS:
+    'get_boat_ownership_result: the owner bits: 1 = player 1, 2 = player 2; 0 means no boat at map_index
+'''
+get_boat_ownership: PROCEDURE
+    ' last 4 bits in backtab are color; used to determine player
+    IF (#backtab(map_index) AND 7) = p1_color THEN
+        get_boat_ownership_result = 1
+        RETURN
+    END IF
+
+    IF (#backtab(map_index) AND 7) = p2_color THEN
+        get_boat_ownership_result = 2
+        RETURN
+    END IF
+
+    get_boat_ownership_result = 0
+END
+
 
 'commented out setup and finish procs because main proc get_map_ownership only called from a p1/p2 call stack (so far)
 ' p1_finish_get_map_ownership: PROCEDURE
@@ -193,7 +218,7 @@ set_building:   PROCEDURE
         GOSUB has_building
 
         IF ret_has_building = 1 THEN
-          #BACKTAB(map_index) = #BACKTAB(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
+          #backtab(map_index) = #backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
         END IF
     LOOP WHILE ret_has_building = 1
 

@@ -42,8 +42,8 @@ main:
     GOTO game_loop
 
 game_loop:
-    SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
-    SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
+    SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE + (p1_mirror_x * Y_MIRROR_X), #p1_cur_f
+    SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE + (p2_mirror_x * Y_MIRROR_X), #p2_cur_f
 
     'capture input
     p1_cont_input = CONT1
