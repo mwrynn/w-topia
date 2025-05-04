@@ -7,31 +7,33 @@ GOTO main
 'note: cannot give INCLUDE a relative path, just a filename; so don't try to refactor :)
 'note: you also cannot have recursive includes,
 'therefore we could not make for example a const-all.bas that includes all the following
-includes_const:
-    INCLUDE "const-intv-color.bas"
-    INCLUDE "const-intv-sprite.bas"
-    INCLUDE "const-intv-cont.bas"
-    INCLUDE "const-intv-card.bas"
-    INCLUDE "const-game-screen.bas"
-    INCLUDE "const-game-player.bas"
-    INCLUDE "const-game-card.bas"
-    INCLUDE "const-game-misc.bas"
 
-includes_bitmap:
-    INCLUDE "bitmap-cursor.bas"
-    INCLUDE "bitmap-land.bas"
-    INCLUDE "bitmap-build.bas"
+'includes: const
+INCLUDE "const-intv-color.bas"
+INCLUDE "const-intv-sprite.bas"
+INCLUDE "const-intv-cont.bas"
+INCLUDE "const-intv-card.bas"
+INCLUDE "const-game-screen.bas"
+INCLUDE "const-game-player.bas"
+INCLUDE "const-game-card.bas"
+INCLUDE "const-game-sprite.bas"
+INCLUDE "const-game-misc.bas"
 
-includes_other:
-    INCLUDE "init.bas"
-    INCLUDE "sound.bas"
-    INCLUDE "move-cursor.bas"
-    INCLUDE "side-buttons.bas"
-    INCLUDE "map.bas"
-    INCLUDE "cursor-move-data.bas"
-    INCLUDE "build.bas"
-    INCLUDE "num-keys.bas"
-    INCLUDE "status-bar.bas"
+'includes: bitmap
+INCLUDE "bitmap-cursor.bas"
+INCLUDE "bitmap-land.bas"
+INCLUDE "bitmap-build.bas"
+
+'includes: other
+INCLUDE "init.bas"
+INCLUDE "sound.bas"
+INCLUDE "move-cursor.bas"
+INCLUDE "side-buttons.bas"
+INCLUDE "map.bas"
+INCLUDE "cursor-move-data.bas"
+INCLUDE "build.bas"
+INCLUDE "num-keys.bas"
+INCLUDE "status-bar.bas"
 
 main:
     GOSUB init
@@ -40,8 +42,8 @@ main:
     GOTO game_loop
 
 game_loop:
-    SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE, #p1_cur_f
-    SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE, #p2_cur_f
+    SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE + (p1_mirror_x * Y_MIRROR_X), #p1_cur_f
+    SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE + (p2_mirror_x * Y_MIRROR_X), #p2_cur_f
 
     'capture input
     p1_cont_input = CONT1

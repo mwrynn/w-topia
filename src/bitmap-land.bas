@@ -20,13 +20,13 @@ land_bitmaps:
 
     'northeast edge
     BITMAP "X.XX...."
-    BITMAP "XXXXXX.."
-    BITMAP "XXXXX..X"
-    BITMAP "XXXXXXXX"
+    BITMAP "XXXXX..."
+    BITMAP "XXXX..X."
     BITMAP "XXXXXXX."
     BITMAP "XXXXXX.."
+    BITMAP "XXXXX..."
+    BITMAP "XXXXXX.."
     BITMAP "XXXXXXX."
-    BITMAP "XXXXXXXX"
 
     'east edge
     BITMAP "........"

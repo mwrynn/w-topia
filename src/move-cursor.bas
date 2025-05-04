@@ -12,6 +12,8 @@ p1_setup_move_cursor:  PROCEDURE
     p_cur_y_move_points = p1_cur_y_move_points
     p_cur_x = p1_cur_x
     p_cur_y = p1_cur_y
+    p_current_form = p1_current_form
+    p_mirror_x = p1_mirror_x
 END
 
 p2_setup_move_cursor:  PROCEDURE
@@ -20,6 +22,8 @@ p2_setup_move_cursor:  PROCEDURE
     p_cur_y_move_points = p2_cur_y_move_points
     p_cur_x = p2_cur_x
     p_cur_y = p2_cur_y
+    p_current_form = p2_current_form
+    p_mirror_x = p2_mirror_x
 END
 
 'PROCEDURE move_cursor: updates cursor move points, and may move the cursor as well,
@@ -34,11 +38,14 @@ END
 '   p_cur_y_move_points: the current move points in the y dimension, will be updated acc. to p_cont_input
 '   p_cur_x: the current position of the cursor, x dimension, will be updated acc. to whether p_cur_x_move_points exceeds threshold
 '   p_cur_y: the current position of the cursor, y dimension, will be updated acc. to whether p_cur_x_move_points exceeds threshold
+'   p_mirror_x: 0/1 for whether to mirror the sprite in the x dim
+'   p_current_form: used to determine whether to use cursor vs. boat logic
 'RETURNS:
 '   p_cur_x_move_points: the updated move points in the x dimension
 '   p_cur_y_move_points: the updated move points in the y dimension
 '   p_cur_x: the updated position of the cursor, x dimension (only updated if updated p_cur_x_move_points exceeds threshold) 
 '   p_cur_y: the updated position of the cursor, y dimension (only updated if updated p_cur_y_move_points exceeds threshold) 
+'   p_mirror_x: updated 0/1 for whether to mirror the sprite in the x dim
 
 move_cursor:   PROCEDURE
     'don't move if a key is pressed (magic from Óscar's book)
@@ -49,6 +56,7 @@ move_cursor:   PROCEDURE
     p_cur_x_move_points = p_cur_x_move_points + direction_offset_x(p_cont_input AND $1F)
     p_cur_y_move_points = p_cur_y_move_points + direction_offset_y(p_cont_input AND $1F)
 
+    'keep in screen bounds: x dimension
     IF p_cur_x_move_points >= CUR_MOVE_THRESHOLD THEN
         p_cur_x_move_points = 0 
         p_cur_x = p_cur_x + 1
@@ -59,6 +67,7 @@ move_cursor:   PROCEDURE
         GOSUB keep_cur_in_bounds_x_min
     END IF
 
+    'keep in screen bounds: y dimension
     IF p_cur_y_move_points >= CUR_MOVE_THRESHOLD THEN
         p_cur_y_move_points = 0 
         p_cur_y = p_cur_y + 1
@@ -68,6 +77,16 @@ move_cursor:   PROCEDURE
         p_cur_y = p_cur_y - 1
         GOSUB keep_cur_in_bounds_y_min
     END IF
+
+    'if a boat, keep off the land!
+    IF p_current_form <> FORM_CURSOR THEN
+        'if change in x dim set facing accordingly
+        IF (direction_offset_x(p_cont_input AND $1F) < 0) OR ((direction_offset_x(p_cont_input AND $1F) = 0) AND p_mirror_x = 1) THEN
+            p_mirror_x = 1
+        ELSE
+            p_mirror_x = 0
+        END IF
+    END IF
 END
 
 p1_finish_move_cursor: PROCEDURE
@@ -75,6 +94,8 @@ p1_finish_move_cursor: PROCEDURE
     p1_cur_y_move_points = p_cur_y_move_points
     p1_cur_x = p_cur_x
     p1_cur_y = p_cur_y
+    p1_mirror_x = p_mirror_x
+    'p1_current_form = p_current_form 'doesn't get modified
 END
 
 p2_finish_move_cursor: PROCEDURE
@@ -82,6 +103,8 @@ p2_finish_move_cursor: PROCEDURE
     p2_cur_y_move_points = p_cur_y_move_points
     p2_cur_x = p_cur_x
     p2_cur_y = p_cur_y
+    p2_mirror_x = p_mirror_x
+    'p2_current_form = p_current_form 'doesn't get modified
 END
 
 'PROCEDUERE keep_cur_in_bounds_x_min: used to validate that x position isn't less than its minimum possible (out of bounds) value.

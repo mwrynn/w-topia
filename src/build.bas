@@ -26,11 +26,11 @@ build_costs:
 	DATA 50,40,3,35,75,60,30,40,25
 
 build_colors: 'purples are placeholders; to be replaced with the player color
-	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,GREEN,GREEN
+	DATA BLACK,BLACK,DARK_GREEN,WHITE,RED,YELLOW,BLACK,PURPLE,PURPLE
 
 build_dock_x: 'tile location for players 1 and 2, for dock where boats are spawned, x coord
-	DATA 3,20
+	DATA 2,18
 
 build_dock_y: 'tile location for players 1 and 2, for dock where boats are spawned, y coord
-	DATA 7,6
+	DATA 6,4
 

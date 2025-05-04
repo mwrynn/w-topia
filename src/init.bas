@@ -30,7 +30,6 @@ init:   PROCEDURE
     GOSUB init_cursor
     GOSUB init_player_stats
     GOSUB init_game_stats
-    GOSUB init_side_button_states
     GOSUB init_num_key_states
     GOSUB init_dock_map_indexes
     GOSUB init_misc
@@ -54,8 +53,10 @@ init_cursor:    PROCEDURE
     p1_cur_y_move_points = 0
     p2_cur_x_move_points = 0
     p2_cur_y_move_points = 0
-    CONST CUR_X_PARAMS = X_NO_INTERACT + X_VISIBLE + X_NORMAL_SIZE
     #p1_cur_f = CARD_BASELINE + p1_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
+    p_mirror_x = 0
+    p1_mirror_x = 0
+    p2_mirror_x = 0
 
     'to avoid using a scarce 16-bit int just for high bit.
     '($1000 AND p1_color_high_bit) in the sprite call doesn't work
@@ -103,7 +104,10 @@ init_player_stats:  PROCEDURE
     #p2_population = STARTING_POPULATION
 
     #p1_last_turns_score = 0
-    #p2_last_turns_score = 0 
+    #p2_last_turns_score = 0
+
+    p1_current_form = FORM_CURSOR
+    p2_current_form = FORM_CURSOR
 END
 
 init_game_stats:  PROCEDURE

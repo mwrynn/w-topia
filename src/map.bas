@@ -69,22 +69,22 @@ map_ownership:
 '''
 
 p1_setup_get_map_tile_at_cursor:  PROCEDURE
-    x_coord = p1_cur_x
-    y_coord = p1_cur_y
+    p_cur_x = p1_cur_x
+    p_cur_y = p1_cur_y
 END
 
 p2_setup_get_map_tile_at_cursor:	PROCEDURE
-    x_coord = p2_cur_x
-    y_coord = p2_cur_y
+    p_cur_x = p2_cur_x
+    p_cur_y = p2_cur_y
 END
 
 'PROCEDURE get_map_tile_at_cursor: gets the map tile that the cursor is most closely placed over
 'PRECONDITIONS:
 '   call p[1|2]_setup_get_map_tile_at_cursor
-'   alternatively, if already in a p1/p2-specific flow, x_coord, y_coord must have been set
+'   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
 'PARAMETERS:
-'   x_coord: pixel coordinate of the cursor's upper left corner for, x dimension
-'   y_coord: pixel coordinate of the cursor's upper left corner for, y dimension
+'   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
+'   p_cur_y: pixel coordinate of the cursor's upper left corner for, y dimension
 'RETURNS:
 '   map_tile_x: x tile index of the tile that the cursor is most closely placed over
 '   map_tile_y: y tile index of the tile that the cursor is most closely placed over
@@ -93,32 +93,32 @@ END
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
 get_map_tile_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
-    map_tile_x = ((x_coord-8+4) - (x_coord-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
-    map_tile_y = ((y_coord-8+4) - (y_coord-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because x_coord and y_coord are lower right
+    map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are lower right
+    map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are lower right
     map_index = 20*map_tile_y + map_tile_x
 END
 
 p1_finish_get_map_tile_at_cursor: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
-    p1_map_index = map_index
+    'p1_map_index = map_index 'not used but can uncomment if that changes
 END
 
 p2_finish_get_map_tile_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
-    p2_map_index = map_index
+    'p2_map_index = map_index 'not used but can uncomment if that changes
 END
 
 '''
+'commented out setup and finish procs because main proc get_map_ownership only called from a p1/p2 call stack (so far)
+' p1_setup_get_map_ownership: PROCEDURE
+'     map_index = p1_map_index
+' END
 
-p1_setup_get_map_ownership: PROCEDURE
-    map_index = p1_map_index
-END
-
-p2_setup_get_map_ownership: PROCEDURE
-    map_index = p2_map_index
-END
+' p2_setup_get_map_ownership: PROCEDURE
+'     map_index = p2_map_index
+' END
 
 'PROCEDURE: get_map_ownership: gets the owner of a tile given the one-dimensional map_index,
     'by looking up in DATA array map_ownership
@@ -133,13 +133,39 @@ get_map_ownership:  PROCEDURE
     map_ownership_result = map_ownership(map_index) AND &00000011
 END
 
-p1_finish_get_map_ownership: PROCEDURE
-    p1_map_ownership_result = map_ownership_result
+'''
+'PROCEDURE: get_boat_ownership gets the player number of the boat at map_index
+'PRECONDITIONS:
+    'map_index must have been set
+'PARAMETERS:
+    'map_index: the one-dimensional index of the tile in the map at which the boat's owner is returned
+'RETURNS:
+    'get_boat_ownership_result: the owner bits: 1 = player 1, 2 = player 2; 0 means no boat at map_index
+'''
+get_boat_ownership: PROCEDURE
+    ' last 4 bits in backtab are color; used to determine player
+    IF (#backtab(map_index) AND 7) = p1_color THEN
+        get_boat_ownership_result = 1
+        RETURN
+    END IF
+
+    IF (#backtab(map_index) AND 7) = p2_color THEN
+        get_boat_ownership_result = 2
+        RETURN
+    END IF
+
+    get_boat_ownership_result = 0
 END
 
-p2_finish_get_map_ownership: PROCEDURE
-    p2_map_ownership_result = map_ownership_result
-END
+
+'commented out setup and finish procs because main proc get_map_ownership only called from a p1/p2 call stack (so far)
+' p1_finish_get_map_ownership: PROCEDURE
+'     p1_map_ownership_result = map_ownership_result
+' END
+
+' p2_finish_get_map_ownership: PROCEDURE
+'     p2_map_ownership_result = map_ownership_result
+' END
 
 '''
 
@@ -192,7 +218,7 @@ set_building:   PROCEDURE
         GOSUB has_building
 
         IF ret_has_building = 1 THEN
-          #BACKTAB(map_index) = #BACKTAB(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
+          #backtab(map_index) = #backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
         END IF
     LOOP WHILE ret_has_building = 1
 
@@ -217,14 +243,14 @@ has_building:   PROCEDURE
 END 
 
 '''
+'commented out setup and finish procs because main proc is_dock_tile_occupied only called from a p1/p2 call stack (so far)
+' p1_setup_is_dock_tile_occupied: PROCEDURE
+'     p_dock_map_index=p1_dock_map_index
+' END
 
-p1_setup_is_dock_tile_occupied: PROCEDURE
-    p_dock_map_index=p1_dock_map_index
-END
-
-p2_setup_is_dock_tile_occupied: PROCEDURE
-    p_dock_map_index=p2_dock_map_index
-END
+' p2_setup_is_dock_tile_occupied: PROCEDURE
+'     p_dock_map_index=p2_dock_map_index
+' END
 
 'PROCEDURE is_dock_tile_occupied: checks whether the dock tile is already occupied by a boat
 'PRECONDITIONS:
@@ -243,13 +269,14 @@ is_dock_tile_occupied:  PROCEDURE
     END IF 
 END
 
-p1_finish_is_dock_tile_occupied: PROCEDURE
-    p1_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
-END
+'commented out setup and finish procs because main proc is_dock_tile_occupied only called from a p1/p2 call stack (so far)
+' p1_finish_is_dock_tile_occupied: PROCEDURE
+'     p1_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
+' END
 
-p2_finish_is_dock_tile_occupied: PROCEDURE
-    p2_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
-END
+' p2_finish_is_dock_tile_occupied: PROCEDURE
+'     p2_ret_is_dock_tile_occupied = ret_is_dock_tile_occupied
+' END
 
 '''
 
@@ -261,7 +288,13 @@ END
 '   building_index: building index of the boat to set, must only be one of the boat values, not a true "building"
 '       such as a factory; does no validation
 '   p_dock_map_index: location (card index) to set buliding at
+'   player: need this to get the right color
 'MODIFIES: #backtab state to set the boat indicated by building_index at p_dock_map_index
 set_boat:   PROCEDURE
-    #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
+    'doing this a bit silly to save a variable (setting boat_color = p[1|2]_color in the IF), may be able to inline the logic
+    IF player = 1 THEN 
+        #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p1_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
+    ELSE
+        #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p2_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
+    END IF
 END
