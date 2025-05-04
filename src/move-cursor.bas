@@ -27,7 +27,7 @@ p2_setup_move_cursor:  PROCEDURE
 END
 
 'PROCEDURE move_cursor: updates cursor move points, and may move the cursor as well,
-'   considering the threshold CUR_MOVE_THRESHOLD. respects screen boundaries
+'   considering the threshold (CUR_MOVE_THRESHOLD or BOAT_MOVE_THRESHOLD). respects screen boundaries
 'PRECONDITIONS:
 '   call p[1|2]_setup_move_cursor
 'POSTCONDITIONS:
@@ -56,23 +56,28 @@ move_cursor:   PROCEDURE
     p_cur_x_move_points = p_cur_x_move_points + direction_offset_x(p_cont_input AND $1F)
     p_cur_y_move_points = p_cur_y_move_points + direction_offset_y(p_cont_input AND $1F)
 
+    IF p_current_form = FORM_CURSOR THEN
+        move_threshold = CUR_MOVE_THRESHOLD
+    ELSE
+        move_threshold = BOAT_MOVE_THRESHOLD
+    END IF
     'keep in screen bounds: x dimension
-    IF p_cur_x_move_points >= CUR_MOVE_THRESHOLD THEN
+    IF p_cur_x_move_points >= move_threshold THEN
         p_cur_x_move_points = 0 
         p_cur_x = p_cur_x + 1
         GOSUB keep_cur_in_bounds_x_max
-    ELSEIF p_cur_x_move_points <= -CUR_MOVE_THRESHOLD THEN
+    ELSEIF p_cur_x_move_points <= -move_threshold THEN
         p_cur_x_move_points = 0
         p_cur_x = p_cur_x - 1
         GOSUB keep_cur_in_bounds_x_min
     END IF
 
     'keep in screen bounds: y dimension
-    IF p_cur_y_move_points >= CUR_MOVE_THRESHOLD THEN
+    IF p_cur_y_move_points >= move_threshold THEN
         p_cur_y_move_points = 0 
         p_cur_y = p_cur_y + 1
         GOSUB keep_cur_in_bounds_y_max
-    ELSEIF p_cur_y_move_points <= -CUR_MOVE_THRESHOLD THEN
+    ELSEIF p_cur_y_move_points <= -move_threshold THEN
         p_cur_y_move_points = 0 
         p_cur_y = p_cur_y - 1
         GOSUB keep_cur_in_bounds_y_min

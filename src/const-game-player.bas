@@ -18,8 +18,8 @@ CONST P2_CUR_STARTING_Y = 20
 CONST STARTING_MONEY = 500 'in original game this is 100
 CONST STARTING_POPULATION = 1000 'in original game this is 1000 (I think; should verify)
 
-CONST CUR_MOVE_THRESHOLD = 6 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
-CONST BOAT_MOVE_THRESHOLD = 6 ' same as CUR_MOVE_THRESHOLD but for boats; maybe we don't need distinct speeds
+CONST CUR_MOVE_THRESHOLD = 8 'how many "move points" trigger the cursor to move a pixel; increase to make cursor slower
+CONST BOAT_MOVE_THRESHOLD = 8 ' same as CUR_MOVE_THRESHOLD but for boats; maybe we don't need distinct speeds
 
 CONST FORM_CURSOR = 0
 CONST FORM_PT_BOAT = 1
