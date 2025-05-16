@@ -48,8 +48,9 @@ END
 '   p_mirror_x: updated 0/1 for whether to mirror the sprite in the x dim
 
 move_cursor:   PROCEDURE
-    'don't move if a key is pressed (magic from Óscar's book)
-    IF ((p_cont_input AND $E0) = $80) + ((p_cont_input AND $E0) = $40) + ((p_cont_input AND $E0) = $20) THEN 
+    'exit out quick if disc not pressed (first condition, this is an optimization)
+    'or if a key is pressed (the second, large condition - magic from Óscar's book - intended to match original game's UI behavior)
+    IF ((p_cont_input AND $1F) = 0) OR (((p_cont_input AND $E0) = $80) + ((p_cont_input AND $E0) = $40) + ((p_cont_input AND $E0) = $20)) THEN
         RETURN
     END IF
 
