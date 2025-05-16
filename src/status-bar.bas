@@ -85,10 +85,13 @@ update_status_bar:  PROCEDURE
     END IF
 
     'show turns left, spaces on the left (support 3 digits)
-    PRINT AT SCREEN_STATUS_POS_TURNS_LEFT COLOR YELLOW,<.3>turns_left
+    IF turns_left <> last_turns_left THEN
+        PRINT AT SCREEN_STATUS_POS_TURNS_LEFT COLOR YELLOW,<.3>turns_left
+        last_turns_left = turns_left
+    END IF
 
+    'show time left (seconds), spaces on the left (support 3 digits)
     IF seconds_left <> last_seconds_left THEN 'optimization - only print if seconds_left changed, PRINT is expensive
-        'show time left (seconds), spaces on the left (support 3 digits)
         PRINT AT SCREEN_STATUS_POS_TIME_LEFT COLOR YELLOW,<.3>seconds_left
         last_seconds_left = seconds_left
     END IF
