@@ -3,6 +3,7 @@
 '********************************************
 '*                                          *
 '*  cursor movement related procedures      *
+'*  also includes boat moving logic         *
 '*                                          *
 '********************************************
 
@@ -60,10 +61,12 @@ move_cursor:   PROCEDURE
     'keep in screen bounds: x dimension
     IF p_cur_x_move_points >= CUR_MOVE_THRESHOLD THEN
         p_cur_x_move_points = 0 
+        p_last_cur_x = p_cur_x
         p_cur_x = p_cur_x + 1
         GOSUB keep_cur_in_bounds_x_max
     ELSEIF p_cur_x_move_points <= -CUR_MOVE_THRESHOLD THEN
         p_cur_x_move_points = 0
+        p_last_cur_x = p_cur_x
         p_cur_x = p_cur_x - 1
         GOSUB keep_cur_in_bounds_x_min
     END IF
@@ -71,10 +74,12 @@ move_cursor:   PROCEDURE
     'keep in screen bounds: y dimension
     IF p_cur_y_move_points >= CUR_MOVE_THRESHOLD THEN
         p_cur_y_move_points = 0 
+        p_last_cur_y = p_cur_y
         p_cur_y = p_cur_y + 1
         GOSUB keep_cur_in_bounds_y_max
     ELSEIF p_cur_y_move_points <= -CUR_MOVE_THRESHOLD THEN
         p_cur_y_move_points = 0 
+        p_last_cur_y = p_cur_y
         p_cur_y = p_cur_y - 1
         GOSUB keep_cur_in_bounds_y_min
     END IF
@@ -87,7 +92,11 @@ move_cursor:   PROCEDURE
         ELSE
             p_mirror_x = 0
         END IF
+
+        GOSUB keep_boat_in_water
     END IF
+    'PRINT AT 3 COLOR p1_color, <.3>p_cur_x
+    'PRINT AT 8 COLOR p1_color, <.3>p_cur_y
 END
 
 p1_finish_move_cursor: PROCEDURE
@@ -137,8 +146,8 @@ END
 '   p_cur_x: if within the maximum bounds in x dimension it remains the same, else it is set to maximum  bounds in x dimension
 
 keep_cur_in_bounds_x_max:   PROCEDURE
-    IF p_cur_x > 159 THEN '159 pixels; this keeps cursor right at the edge, so apparently x is the right side of the card??
-    	p_cur_x	= 159
+    IF p_cur_x > 160 THEN
+    	p_cur_x	= 160
     END IF
 END
 
@@ -171,7 +180,45 @@ END
 '   p_cur_y: if within the maximum bounds in y dimension it remains the same, else it is set to maximum  bounds in y dimension
 
 keep_cur_in_bounds_y_max:   PROCEDURE
-    IF p_cur_y > 89 THEN '96 pixels with 8 for status bar; y counts from bottom?
-        p_cur_y = 89
+    IF p_cur_y > 96 THEN '96 pixels with 8 for status bar; y counts from bottom?
+        p_cur_y = 96
+    END IF
+END
+
+''' 
+
+'PROCEDUERE keep_boat_in_water: used to validate that position is within the water, in other words not on land
+'   if it IS on land, bumps x, y position back 
+'PRECONDITIONS:
+'   p_cur_x is set
+'   p_cur_y is set
+'   p_last_cur_x is set
+'   p_last_cur_y is set
+'POSTCONDITIONS:
+'   none
+'PARAMETERS:
+'   p_cur_x is the x coordinate to validate/potentially adjust, represents upper left of boat sprite's card
+'   p_cur_y is the y coordinate to validate/potentially adjust, represents upper left of boat sprite's card
+'   p_last_cur_x is the previous x coordinate to fall back to if validation fails
+'   p_last_cur_y is the previous y coordinate to fall back to if validation fails
+'RETURNS:
+'   p_cur_x: if p_cur_x not on land in x dimension it remains the same, else it is adjusted by one pixel
+'   p_cur_y: same as above but for y
+
+keep_boat_in_water:   PROCEDURE
+    'remember (p_cur_x, p_cur_y) is the lower-right corner of the sprite controlled by the player
+    'check if it overlaps with a map tile 
+
+    'probably cannot reuse map.get_map_tile_at_cursor as that gets the most overlapping "tile"
+
+    'check four corners separately maybe?
+    'upper left for starters (p_cur_x, p_cur_y)
+    'a "soft" TODO: possibly optimize this
+    GOSUB get_does_any_corner_of_cursor_overlap_land
+
+    IF does_overlap = 1 THEN
+        'bump back 
+        p_cur_x = p_last_cur_x
+        p_cur_y = p_last_cur_y
     END IF
 END

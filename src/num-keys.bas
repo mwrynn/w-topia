@@ -235,6 +235,8 @@ END
     'p_current_form
     'p_cur_x: if boat is selected, this is the upper left pixel coordinate of the boat location, x dim
     'p_cur_y: if boat is selected, this is the upper left pixel coordinate of the boat location, y dim
+    'p_last_cur_x: needs to be set for the "snap" when boast is selected, else if collision we will go back to cursor location
+    'p_last_cur_y: see above
 'MODIFIES:
     'backtab to remove boat from location
 attempt_to_select_boat:  PROCEDURE
@@ -249,6 +251,9 @@ attempt_to_select_boat:  PROCEDURE
         'TODO: might want to move this map math to map.bas
         p_cur_x = (map_index % 20 + 1) * 8
         p_cur_y = (map_index / 20 + 1) * 8
+        p_last_cur_x = p_cur_x
+        p_last_cur_y = p_cur_y
+
         IF p_current_form = FORM_FISHING_BOAT THEN
             #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_FISHING_BOAT * CARD_MULT
         ELSEIF p_current_form = FORM_PT_BOAT THEN
@@ -305,7 +310,6 @@ END
 get_boat_type_at_cursor:    PROCEDURE
     GOSUB get_map_tile_at_cursor
     get_boat_type_at_cursor_result = (((#backtab(map_index) AND NOT 7) - CARD_BASELINE) / CARD_MULT) - CARD_NUM_BUILD - 6
-
 END
 
 '''

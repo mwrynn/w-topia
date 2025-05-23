@@ -29,35 +29,35 @@ p2_get_should_show_vars:    PROCEDURE
 END
 
 p1_show_money:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_money
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_money
 END
 
 p1_show_score:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_score
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_score
 END
 
 p1_show_population: PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_population
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_population
 END
 
 p1_show_last_turns_score:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.5>#p1_show_last_turns_score
+    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_show_last_turns_score
 END
 
 p2_show_money:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_money
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_money
 END
 
 p2_show_score:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_score
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_score
 END
 
 p2_show_population: PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_population
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_population
 END
 
 p2_show_last_turns_score:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.5>#p2_show_last_turns_score
+    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_show_last_turns_score
 END
 
 update_status_bar:  PROCEDURE
