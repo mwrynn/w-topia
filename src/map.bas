@@ -93,8 +93,8 @@ END
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
 get_map_tile_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
-    map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are lower right
-    map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are lower right
+    map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
+    map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
     map_index = 20*map_tile_y + map_tile_x
 END
 
@@ -108,6 +108,75 @@ p2_finish_get_map_tile_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
     'p2_map_index = map_index 'not used but can uncomment if that changes
+END
+
+'''
+'SPECIAL due to program flow and similarity between get_map_tile_at_pixel_coord and get_map_tile_at_cursor,
+'including the fact that they use the same parameters, we do not use a
+'p[1|2]_setup_get_does_any_corner_of_cursor_overlap_land, but instead reuse p[1|2]_setup_get_map_tile_at_cursor
+
+'PROCEDURE get_does_any_corner_of_cursor_overlap_land: gets whether the four coordinates associated with a
+'   given p_cur_x/p_cur_y (which represents the upper left corner of sprite) overlaps with land
+'PRECONDITIONS:
+'   call p[1|2]_setup_get_map_tile_at_cursor
+'   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
+'PARAMETERS:
+'   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
+'   p_cur_y: pixel coordinate of the cursor's upper left corner for, y dimension
+'RETURNS:
+'   does_overlap: 1/0
+'NOTES:
+'   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
+get_does_any_corner_of_cursor_overlap_land:   PROCEDURE 
+    '8 is the card size in both dimensions
+    does_overlap=0
+
+    'PRINT AT 3 COLOR p1_color, <.3>(p_cur_x / 8)
+    'PRINT AT 7 COLOR p1_color, <.3>((p_cur_y / 8))
+    'PRINT AT 3 COLOR p1_color, #backtab(20*2+2)
+
+    'TODO these variables make the calcluations below nice to look at, but kind of a waste of ram
+    ul_tile_loc_x=(p_cur_x / 8)-1
+    ul_tile_loc_y=(p_cur_y / 8)-1
+
+    ur_tile_loc_x=((p_cur_x + 7) / 8)-1
+    ur_tile_loc_y=(p_cur_y / 8)-1
+
+    ll_tile_loc_x=(p_cur_x / 8)-1
+    ll_tile_loc_y=((p_cur_y + 7) / 8)-1
+
+    lr_tile_loc_x=((p_cur_x + 7)/ 8)-1
+    lr_tile_loc_y=((p_cur_y + 7)/ 8)-1
+
+    'PRINT AT 3 COLOR p1_color, <.3>(20*tile_loc_y+tile_loc_x)
+
+    'upper left
+    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <> OO THEN
+        does_overlap=1
+        PRINT AT 3 COLOR p1_color, <.3>1
+        RETURN
+    END IF
+
+    'upper right
+    IF #backtab(20 * ur_tile_loc_y + (ur_tile_loc_x)) <> OO THEN
+        does_overlap=1
+        PRINT AT 3 COLOR p1_color, <.3>2
+        RETURN
+    END IF
+
+    'lower left
+    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <> OO THEN
+        does_overlap=1
+        PRINT AT 3 COLOR p1_color, <.3>3
+        RETURN
+    END IF
+
+    'lower right
+    IF #backtab(20 * (lr_tile_loc_y) + (lr_tile_loc_x)) <> OO THEN
+        does_overlap=1
+        PRINT AT 3 COLOR p1_color, <.3>4
+        RETURN
+    END IF
 END
 
 '''
