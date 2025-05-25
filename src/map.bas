@@ -27,6 +27,10 @@ CONST NN = CARD_BASELINE +15 * CARD_MULT + TAN
 CONST PP = CARD_BASELINE +16 * CARD_MULT + TAN
 CONST QQ = CARD_BASELINE +17 * CARD_MULT + TAN
 
+'useful for checking whether a card is ANY land (check the range)
+CONST FIRST_LAND = XX
+CONST LAST_LAND = QQ
+
 'map_cards: 2D array that defines the land graphics (cards) to be used for each location
 'OO means the sea and everythinge else is a land card
 map_cards:
@@ -68,19 +72,19 @@ map_ownership:
 
 '''
 
-p1_setup_get_map_tile_at_cursor:  PROCEDURE
+p1_setup_get_map_index_at_cursor:  PROCEDURE
     p_cur_x = p1_cur_x
     p_cur_y = p1_cur_y
 END
 
-p2_setup_get_map_tile_at_cursor:	PROCEDURE
+p2_setup_get_map_index_at_cursor:	PROCEDURE
     p_cur_x = p2_cur_x
     p_cur_y = p2_cur_y
 END
 
-'PROCEDURE get_map_tile_at_cursor: gets the map tile that the cursor is most closely placed over
+'PROCEDURE get_map_index_at_cursor: gets the map tile that the cursor is most closely placed over
 'PRECONDITIONS:
-'   call p[1|2]_setup_get_map_tile_at_cursor
+'   call p[1|2]_setup_get_map_index_at_cursor
 '   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
 'PARAMETERS:
 '   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
@@ -92,33 +96,33 @@ END
 '       (since we need to access the data via a single index)
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
-get_map_tile_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
+get_map_index_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
     map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
     map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
     map_index = 20*map_tile_y + map_tile_x
 END
 
-p1_finish_get_map_tile_at_cursor: PROCEDURE
+p1_finish_get_map_index_at_cursor: PROCEDURE
     p1_map_tile_x = map_tile_x
     p1_map_tile_y = map_tile_y
     'p1_map_index = map_index 'not used but can uncomment if that changes
 END
 
-p2_finish_get_map_tile_at_cursor: PROCEDURE
+p2_finish_get_map_index_at_cursor: PROCEDURE
     p2_map_tile_x = map_tile_x
     p2_map_tile_y = map_tile_y
     'p2_map_index = map_index 'not used but can uncomment if that changes
 END
 
 '''
-'SPECIAL due to program flow and similarity between get_map_tile_at_pixel_coord and get_map_tile_at_cursor,
+'SPECIAL due to program flow and similarity between get_map_tile_at_pixel_coord and get_map_index_at_cursor,
 'including the fact that they use the same parameters, we do not use a
-'p[1|2]_setup_get_does_any_corner_of_cursor_overlap_land, but instead reuse p[1|2]_setup_get_map_tile_at_cursor
+'p[1|2]_setup_get_does_any_corner_of_cursor_overlap_land, but instead reuse p[1|2]_setup_get_map_index_at_cursor
 
 'PROCEDURE get_does_any_corner_of_cursor_overlap_land: gets whether the four coordinates associated with a
 '   given p_cur_x/p_cur_y (which represents the upper left corner of sprite) overlaps with land
 'PRECONDITIONS:
-'   call p[1|2]_setup_get_map_tile_at_cursor
+'   call p[1|2]_setup_get_map_index_at_cursor
 '   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
 'PARAMETERS:
 '   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
@@ -149,30 +153,32 @@ get_does_any_corner_of_cursor_overlap_land:   PROCEDURE
     lr_tile_loc_y=((p_cur_y + 7)/ 8)-1
 
     'PRINT AT 3 COLOR p1_color, <.3>(20*tile_loc_y+tile_loc_x)
+    
+    'the range checks below are to check if it is a land card - perhaps refactor into an is_land proc
 
     'upper left
-    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <> OO THEN
+    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>1
         RETURN
     END IF
 
     'upper right
-    IF #backtab(20 * ur_tile_loc_y + (ur_tile_loc_x)) <> OO THEN
+    IF #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>2
         RETURN
     END IF
 
     'lower left
-    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <> OO THEN
+    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>3
         RETURN
     END IF
 
     'lower right
-    IF #backtab(20 * (lr_tile_loc_y) + (lr_tile_loc_x)) <> OO THEN
+    IF #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>4
         RETURN
@@ -350,20 +356,20 @@ END
 '''
 
 'PROCEDURE set_boat: sets boat at location
-'   'oes no validations; assumes already done
+'   does no validations; assumes already done
 'PRECONDITION:
 '   these vars are set: building_index, p_dock_map_index
 'PARAMETERS:
 '   building_index: building index of the boat to set, must only be one of the boat values, not a true "building"
 '       such as a factory; does no validation
-'   p_dock_map_index: location (card index) to set buliding at
+'   map_index_to_set_boat_at: location (card index) to set buliding at
 '   player: need this to get the right color
 'MODIFIES: #backtab state to set the boat indicated by building_index at p_dock_map_index
 set_boat:   PROCEDURE
     'doing this a bit silly to save a variable (setting boat_color = p[1|2]_color in the IF), may be able to inline the logic
     IF player = 1 THEN 
-        #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p1_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
+        #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p1_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
     ELSE
-        #backtab(p_dock_map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p2_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
+        #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p2_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
     END IF
 END
