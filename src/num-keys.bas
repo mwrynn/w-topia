@@ -98,7 +98,7 @@ p1_setup_process_key_press: PROCEDURE
     p_dock_map_index = p1_dock_map_index
 
     'setups for some procs in map.bas - I don't like it being here but it needs to call the map procs before returning to the "p#" context
-    GOSUB p1_setup_get_map_tile_at_cursor
+    GOSUB p1_setup_get_map_index_at_cursor
     GOSUB p1_setup_set_building
 END
 
@@ -118,7 +118,7 @@ p2_setup_process_key_press: PROCEDURE
     p_dock_map_index = p2_dock_map_index
 
     'setups for some procs in map.bas - I don't like it being here but it needs to call the map procs before returning to the "p#" context
-    GOSUB p2_setup_get_map_tile_at_cursor
+    GOSUB p2_setup_get_map_index_at_cursor
     GOSUB p2_setup_set_building
 END
 
@@ -146,7 +146,7 @@ END
 'RETURNS:
 '   [p1|p2]_registered_command is set if a new command is registered
 '   [p1|p2]_last_num_key_pressed is set to the num key pressed if no command is processed AND p_key_pressed <> p_last_num_key_pressed
-'   [p1|p2]_cur_f card of player cursor that is updated if necessary
+'   #[p1|p2]_cur_f card of player cursor that is updated if necessary
 '   [p1|p2]_current_form
 '   [p1|p2]_cur_x: updated location of cursor, upper left of selected boat. if no boat selection, not modified
 '   [p1|p2]_cur_y: updated location of cursor, upper left of selected boat. if no boat selection, not modified
@@ -190,7 +190,13 @@ process_key_press:  PROCEDURE
             GOSUB attempt_to_select_boat
         END IF
     ELSE 'catch-all for both boat types which can be handled the same
-        p_registered_command=p_registered_command ' noop
+        IF p_key_pressed = KEY_CURSOR_SELECT THEN
+            GOSUB attempt_to_switch_to_cursor
+        ELSEIF p_key_pressed = KEY_NOTHING THEN 'need to check this or when releasing KEY_CURSOR_SELECT logic flows into invalid_key_press case
+            p_last_num_key_pressed = p_last_num_key_pressed 'noop
+        ELSE
+            GOSUB invalid_key_press
+        END IF
     END IF
 
     p_last_num_key_pressed = p_key_pressed
@@ -204,7 +210,7 @@ p1_finish_process_key_press: PROCEDURE
     p1_current_form = p_current_form
     p1_cur_x = p_cur_x
     p1_cur_y = p_cur_y
-    GOSUB p1_finish_get_map_tile_at_cursor
+    GOSUB p1_finish_get_map_index_at_cursor
 END
 
 
@@ -216,7 +222,7 @@ p2_finish_process_key_press: PROCEDURE
     p2_current_form = p_current_form
     p2_cur_x = p_cur_x
     p2_cur_y = p_cur_y
-    GOSUB p2_finish_get_map_tile_at_cursor
+    GOSUB p2_finish_get_map_index_at_cursor
 END
 
 '''
@@ -235,7 +241,7 @@ END
     'p_current_form
     'p_cur_x: if boat is selected, this is the upper left pixel coordinate of the boat location, x dim
     'p_cur_y: if boat is selected, this is the upper left pixel coordinate of the boat location, y dim
-    'p_last_cur_x: needs to be set for the "snap" when boast is selected, else if collision we will go back to cursor location
+    'p_last_cur_x: needs to be set for the "snap" when boat is selected, else if collision we will go back to cursor location
     'p_last_cur_y: see above
 'MODIFIES:
     'backtab to remove boat from location
@@ -268,17 +274,48 @@ attempt_to_select_boat:  PROCEDURE
 END
 
 '''
-'PROCEDURE can_build_at_cursor: helper function to check if can build buildings at a given location
+'attempt_to_switch_to_cursor - must already be in boat form
+'PRECONDITIONS:
+    'params all set
+'PARAMETERS:
+    'p_cur_x: map pixel in x dimension (practically speaking, this is tbe top-left pixel of the cursor)
+    'p_cur_y: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
+    'player:
+    'p_color_low_bits: for use in setting card to a new one if necessary
+'RETURNS:
+    'p_current_form
+    'p_cur_x: if boat is selected, this is the upper left pixel coordinate of the boat location, x dim
+    'p_cur_y: if boat is selected, this is the upper left pixel coordinate of the boat location, y dim
+    '#p_cur_f: card for the current form
+'MODIFIES:
+    'backtab to set boat at location
+attempt_to_switch_to_cursor:  PROCEDURE
+    GOSUB can_leave_boat_at_cursor
+
+    IF can_leave_boat_at_cursor_result = 0 THEN
+        GOSUB invalid_key_press
+        RETURN 
+    END IF
+
+    GOSUB get_boat_type_at_cursor
+
+    p_current_form = FORM_CURSOR
+    #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
+
+    GOSUB get_map_index_at_cursor 
+
+    map_index_to_set_boat_at = map_index
+
+    GOSUB set_boat
+END
+
+'PROCEDURE can_select_boat_at_cursor: helper function to check if can select a boat at a given location
     'considers:
         'tile that cursor is most overlapping with
-        'owner of that tile
-        'whether command is for a building (e.g. a fort but not a PT Boat)
-    'does not consider:
-        'if player has enough money
-    'does not actually create/set the building
+        'owner of the boat
 'PRECONDITIONS:
     'p_registered_command is set
-    'p#_setup_get_map_tile_at_cursor already called
+    'p#_setup_get_map_index_at_cursor already called
         'therefore setting p_cur_x, p_cur_y
     'player is set
 'POSTCONDITIONS:
@@ -290,7 +327,7 @@ END
 'RETURNS:
     'can_select_boat_at_cursor_result: 0 if cannot select boat, 1 if can select boat
 can_select_boat_at_cursor:    PROCEDURE
-    GOSUB get_map_tile_at_cursor
+    GOSUB get_map_index_at_cursor
     GOSUB get_boat_ownership
 
     IF get_boat_ownership_result = player THEN
@@ -301,14 +338,42 @@ can_select_boat_at_cursor:    PROCEDURE
 END
 
 '''
-'PROCEDURE get_boat_type_at_cursor: helper function to check if can build buildings at a given location
+'PROCEDURE can_leave_boat_at_cursor: helper function to check if can build buildings at a given location
+    'considers: whether the most overlapped tile has a boat.
+'PRECONDITIONS:
+    'p_registered_command is set
+    'p#_setup_get_map_index_at_cursor already called
+        'therefore setting p_cur_x, p_cur_y
+    'player is set
+'POSTCONDITIONS:
+    'NONE
 'PARAMETERS:
     'p_cur_x: map pixel in x dimension (practically speaking, this is the top-left pixel of the cursor)
     'p_cur_y: map pixel in y dimension (practically speaking, this is the top-left pixel of the cursor)
 'RETURNS:
-    'get_boat_type_at_cursor_result: it is the building_index (see bitmap-build.bas)
+    'can_leave_boat_at_cursor_result: 0 if cannot select boat, 1 if can select boat
+can_leave_boat_at_cursor:    PROCEDURE
+    GOSUB get_boat_type_at_cursor
+
+    IF get_boat_type_at_cursor_result = FORM_PT_BOAT OR get_boat_type_at_cursor_result = FORM_FISHING_BOAT THEN
+        'PRINT AT 6 COLOR p1_color, <.3>get_boat_type_at_cursor_result
+        can_leave_boat_at_cursor_result = 0
+        RETURN
+    END IF
+
+    can_leave_boat_at_cursor_result = 1
+END
+
+'''
+'PROCEDURE get_boat_type_at_cursor: helper function to check which boat type is at the tile indicated by the given coordinates
+'PARAMETERS:
+    'p_cur_x: map pixel in x dimension (practically speaking, this is the top-left pixel of the cursor)
+    'p_cur_y: map pixel in y dimension (practically speaking, this is the top-left pixel of the cursor)
+'RETURNS:
+    'get_boat_type_at_cursor_result: returns FORM_PT_BOAT or FORM_FISHING_BOAT or something else if no boat is there
 get_boat_type_at_cursor:    PROCEDURE
-    GOSUB get_map_tile_at_cursor
+    GOSUB get_map_index_at_cursor
+    'TODO document the formula below
     get_boat_type_at_cursor_result = (((#backtab(map_index) AND NOT 7) - CARD_BASELINE) / CARD_MULT) - CARD_NUM_BUILD - 6
 END
 
@@ -352,6 +417,7 @@ build:  PROCEDURE
         GOSUB can_build_at_dock
         IF can_build_at_dock_result THEN
             #p_money = #p_money - build_costs(building_index)
+            map_index_to_set_boat_at = p_dock_map_index
             GOSUB set_boat
         END IF
     'wtf case
@@ -370,7 +436,7 @@ END
     'does not actually create/set the building
 'PRECONDITIONS:
     'p_registered_command is set
-    'p#_setup_get_map_tile_at_cursor already called
+    'p#_setup_get_map_index_at_cursor already called
         'therefore setting p_cur_x, p_cur_y
     'player is set
 'POSTCONDITIONS:
@@ -384,7 +450,7 @@ END
     'can_build_at_cursor_result (1/0)
 can_build_at_cursor:    PROCEDURE
     IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
-        GOSUB get_map_tile_at_cursor
+        GOSUB get_map_index_at_cursor
         GOSUB get_map_ownership
 
         IF map_ownership_result = player THEN

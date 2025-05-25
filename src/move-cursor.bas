@@ -209,7 +209,7 @@ keep_boat_in_water:   PROCEDURE
     'remember (p_cur_x, p_cur_y) is the lower-right corner of the sprite controlled by the player
     'check if it overlaps with a map tile 
 
-    'probably cannot reuse map.get_map_tile_at_cursor as that gets the most overlapping "tile"
+    'probably cannot reuse map.get_map_index_at_cursor as that gets the most overlapping "tile"
 
     'check four corners separately maybe?
     'upper left for starters (p_cur_x, p_cur_y)
