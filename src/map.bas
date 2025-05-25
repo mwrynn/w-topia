@@ -157,28 +157,28 @@ get_does_any_corner_of_cursor_overlap_land:   PROCEDURE
     'the range checks below are to check if it is a land card - perhaps refactor into an is_land proc
 
     'upper left
-    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) >= XX AND #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <= QQ THEN
+    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>1
         RETURN
     END IF
 
     'upper right
-    IF #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) >= XX AND #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) <= QQ THEN
+    IF #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>2
         RETURN
     END IF
 
     'lower left
-    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) >= XX AND #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <= QQ THEN
+    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>3
         RETURN
     END IF
 
     'lower right
-    IF #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) >= XX AND #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) <= QQ THEN
+    IF #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) <= LAST_LAND THEN
         does_overlap=1
         PRINT AT 3 COLOR p1_color, <.3>4
         RETURN
