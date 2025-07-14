@@ -98,12 +98,9 @@ game_loop:
     GOTO game_loop
 
 if_second_passed_dec_timer:  PROCEDURE
-    'potential optimization: do a quicker check than mod that can catch most false case more quickly
-    'for example if the last bit is 1 then it's odd so cannot be divisible by FRAMES_PER_SEC
-    '(which should only ever be 60 or 50)
-    'but need to think about and test a better optimization
-    IF FRAME % FRAMES_PER_SEC = 0 THEN
+    IF FRAME - #tmp_frame >= FRAMES_PER_SEC THEN
         seconds_left = seconds_left - 1
+        #tmp_frame = FRAME
     END IF
 END
 
