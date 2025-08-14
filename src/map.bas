@@ -115,7 +115,25 @@ p2_finish_get_map_index_at_cursor: PROCEDURE
 END
 
 '''
-'SPECIAL due to program flow and similarity between get_map_tile_at_pixel_coord and get_map_index_at_cursor,
+'macro functions for colllision detection (ul == upper-left corner, etc.)
+'8 is the card size in both dimensions
+DEF FN tile_x_ul(x) = (x / 8 - 1)
+DEF FN tile_y_ul(y) = (y / 8 - 1)
+
+DEF FN tile_x_ur(x) = ((x + 7) / 8 - 1)
+DEF FN tile_y_ur(y) = (y / 8 - 1)
+
+DEF FN tile_x_ll(x) = (x / 8 - 1)
+DEF FN tile_y_ll(y) = ((y + 7) / 8 - 1)
+
+DEF FN tile_x_lr(x) = ((x + 7) / 8 - 1)
+DEF FN tile_y_lr(y) = ((y + 7) / 8 - 1)
+
+DEF FN tile_addr(x, y) = (20 * y + x)
+
+DEF FN is_land_tile(addr) = (#BACKTAB(addr) >= FIRST_LAND AND #BACKTAB(addr) <= LAST_LAND)
+
+'SPECIAL due to program flow and similarity between this and get_map_index_at_cursor,
 'including the fact that they use the same parameters, we do not use a
 'p[1|2]_setup_get_does_any_corner_of_cursor_overlap_land, but instead reuse p[1|2]_setup_get_map_index_at_cursor
 
@@ -132,55 +150,37 @@ END
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
 get_does_any_corner_of_cursor_overlap_land:   PROCEDURE 
-    '8 is the card size in both dimensions
     does_overlap=0
 
-    'PRINT AT 3 COLOR p1_color, <.3>(p_cur_x / 8)
-    'PRINT AT 7 COLOR p1_color, <.3>((p_cur_y / 8))
-    'PRINT AT 3 COLOR p1_color, #backtab(20*2+2)
-
-    'TODO these variables make the calcluations below nice to look at, but kind of a waste of ram
-    ul_tile_loc_x=(p_cur_x / 8)-1
-    ul_tile_loc_y=(p_cur_y / 8)-1
-
-    ur_tile_loc_x=((p_cur_x + 7) / 8)-1
-    ur_tile_loc_y=(p_cur_y / 8)-1
-
-    ll_tile_loc_x=(p_cur_x / 8)-1
-    ll_tile_loc_y=((p_cur_y + 7) / 8)-1
-
-    lr_tile_loc_x=((p_cur_x + 7)/ 8)-1
-    lr_tile_loc_y=((p_cur_y + 7)/ 8)-1
-
-    'PRINT AT 3 COLOR p1_color, <.3>(20*tile_loc_y+tile_loc_x)
-    
-    'the range checks below are to check if it is a land card - perhaps refactor into an is_land proc
-
-    'upper left
-    IF #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ul_tile_loc_y + ul_tile_loc_x) <= LAST_LAND THEN
+    'potential for optimization here (could precompute some of the vars in macros above...anything else??)
+    IF is_land_tile(tile_addr(tile_x_ul(p_cur_x), tile_y_ul(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ur(p_cur_x), tile_y_ur(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ll(p_cur_x), tile_y_ll(p_cur_y))) OR is_land_tile(tile_addr(tile_x_lr(p_cur_x), tile_y_lr(p_cur_y))) THEN
         does_overlap=1
-        PRINT AT 3 COLOR p1_color, <.3>1
         RETURN
     END IF
+END
 
-    'upper right
-    IF #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) >= FIRST_LAND AND #backtab(20 * ur_tile_loc_y + ur_tile_loc_x) <= LAST_LAND THEN
-        does_overlap=1
-        PRINT AT 3 COLOR p1_color, <.3>2
-        RETURN
-    END IF
+'SPECIAL due to program flow and similarity between this and get_map_index_at_cursor,
+'including the fact that they use the same parameters, we do not use a
+'p[1|2]_setup_does_any_corner_of_cursor_overlap_opponents_parked_pt_boat, but instead reuse p[1|2]_setup_get_map_index_at_cursor
 
-    'lower left
-    IF #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (ll_tile_loc_y) + ll_tile_loc_x) <= LAST_LAND THEN
-        does_overlap=1
-        PRINT AT 3 COLOR p1_color, <.3>3
-        RETURN
-    END IF
+'PROCEDURE get_does_any_corner_of_cursor_overlap_opponents_parked_pt_boat: gets whether the four coordinates associated with a
+'   given p_cur_x/p_cur_y (which represents the upper left corner of sprite) overlaps with a parked PT boat owned by opponent
+'PRECONDITIONS:
+'   call p[1|2]_setup_get_map_index_at_cursor
+'   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
+'PARAMETERS:
+'   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
+'   p_cur_y: pixel coordinate of the cursor's upper left corner for, y dimension
+'RETURNS:
+'   does_overlap: 1/0
+'NOTES:
+'   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
+get_does_any_corner_of_cursor_overlap_opponents_parked_pt_boat:   PROCEDURE 
+    does_overlap=0
 
-    'lower right
-    IF #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) >= FIRST_LAND AND #backtab(20 * (lr_tile_loc_y) + lr_tile_loc_x) <= LAST_LAND THEN
+    'potential for optimization here (could precompute some of the vars in macros above...anything else??)
+    IF is_land_tile(tile_addr(tile_x_ul(p_cur_x), tile_y_ul(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ur(p_cur_x), tile_y_ur(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ll(p_cur_x), tile_y_ll(p_cur_y))) OR is_land_tile(tile_addr(tile_x_lr(p_cur_x), tile_y_lr(p_cur_y))) THEN
         does_overlap=1
-        PRINT AT 3 COLOR p1_color, <.3>4
         RETURN
     END IF
 END

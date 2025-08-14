@@ -15,6 +15,11 @@ p1_setup_move_cursor:  PROCEDURE
     p_cur_y = p1_cur_y
     p_current_form = p1_current_form
     p_mirror_x = p1_mirror_x
+
+    'other player's info
+    other_cur_x = p2_cur_x
+    other_cur_y = p2_cur_y
+    other_current_form = p2_current_form
 END
 
 p2_setup_move_cursor:  PROCEDURE
@@ -25,6 +30,11 @@ p2_setup_move_cursor:  PROCEDURE
     p_cur_y = p2_cur_y
     p_current_form = p2_current_form
     p_mirror_x = p2_mirror_x
+
+    'other player's info
+    other_cur_x = p1_cur_x
+    other_cur_y = p1_cur_y
+    other_current_form = p1_current_form
 END
 
 'PROCEDURE move_cursor: updates cursor move points, and may move the cursor as well,
@@ -94,9 +104,16 @@ move_cursor:   PROCEDURE
         END IF
 
         GOSUB keep_boat_in_water
+
+        'if fishing boat touches PT boat (parked or actively controlled) fishing boat dies
+        IF p_current_form = FORM_FISHING_BOAT THEN
+            GOSUB does_active_fishing_boat_overlap_opponents_parked_pt_boat
+            IF 1=1 THEN 'touching parking PT BOAT
+            ELSEIF other_current_form = FORM_PT_BOAT THEN
+                
+            END IF
+        END IF
     END IF
-    'PRINT AT 3 COLOR p1_color, <.3>p_cur_x
-    'PRINT AT 8 COLOR p1_color, <.3>p_cur_y
 END
 
 p1_finish_move_cursor: PROCEDURE
@@ -187,7 +204,7 @@ END
 
 ''' 
 
-'PROCEDUERE keep_boat_in_water: used to validate that position is within the water, in other words not on land
+'PROCEDURE keep_boat_in_water: used to validate that position is within the water, in other words not on land
 '   if it IS on land, bumps x, y position back 
 'PRECONDITIONS:
 '   p_cur_x is set
@@ -221,4 +238,27 @@ keep_boat_in_water:   PROCEDURE
         p_cur_x = p_last_cur_x
         p_cur_y = p_last_cur_y
     END IF
+END
+
+'''
+
+'PROCEDURE is_fishing_boat_touching_parked_pt_boat: used to check if a player-controlled 
+'   fishing boat is touching a parked PT boat.
+'PRECONDITIONS:
+'   call p[1|2]_setup_get_map_index_at_cursor
+'   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
+'POSTCONDITIONS:
+'   none
+'PARAMETERS:
+'   p_cur_x
+'   p_cur_y
+'RETURNS:
+'   does_overlap
+
+does_active_fishing_boat_overlap_opponents_parked_pt_boat:   PROCEDURE
+    does_overlap = 0
+
+    'get map index for each of four corners. each is in one map index. check for whether opposing
+    
+    'side's 
 END

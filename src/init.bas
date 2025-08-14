@@ -25,6 +25,8 @@ init:   PROCEDURE
     WAIT
     DEFINE CARD_NUM_BUILD, 9, build_bitmaps
     WAIT
+    'DEFINE CARD_NUM_FISHING_BOAT_DEATH_ANIM, 5, fishing_boat_death_anim_bitmaps
+    'WAIT
 
     GOSUB init_player_colors
     GOSUB init_cursor
@@ -119,6 +121,7 @@ END
 init_misc:  PROCEDURE
     #COLOR_STACK_BG_SHIFT = &0010000000000000
     #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
+    UNSIGNED #tmp_frame = 0
 END
 
 init_dock_map_indexes:  PROCEDURE
