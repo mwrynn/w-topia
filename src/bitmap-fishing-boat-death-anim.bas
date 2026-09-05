@@ -42,4 +42,6 @@ fishing_boat_death_anim_bitmaps:
     BITMAP "....xx.."
     BITMAP ".xxxx..."
     BITMAP "........"
-    BITMAP "........
+    BITMAP "........"
+
+CONST FISHING_BOAT_DEATH_ANIM_FINAL_INDEX = 4

@@ -25,8 +25,8 @@ init:   PROCEDURE
     WAIT
     DEFINE CARD_NUM_BUILD, 9, build_bitmaps
     WAIT
-    'DEFINE CARD_NUM_FISHING_BOAT_DEATH_ANIM, 5, fishing_boat_death_anim_bitmaps
-    'WAIT
+    DEFINE CARD_NUM_FISHING_BOAT_DEATH_ANIM, 5, fishing_boat_death_anim_bitmaps
+    WAIT
 
     GOSUB init_player_colors
     GOSUB init_cursor
@@ -93,6 +93,14 @@ init_player_colors: PROCEDURE
         p2_color_high_bit = 0
         p2_color_low_bits = p2_color
     END IF
+
+    DIM player_index_to_color(2)
+    player_index_to_color(0)=p1_color
+    player_index_to_color(1)=p2_color
+
+    DIM player_index_to_opponent_color(2)
+    player_index_to_opponent_color(0)=p2_color
+    player_index_to_opponent_color(1)=p1_color
 END
 
 init_player_stats:  PROCEDURE
@@ -110,6 +118,12 @@ init_player_stats:  PROCEDURE
 
     p1_current_form = FORM_CURSOR
     p2_current_form = FORM_CURSOR
+
+    p1_anim_frame = 0
+    p2_anim_frame = 0
+
+    p1_anim_frame_timer = 0
+    p2_anim_frame_timer = 0
 END
 
 init_game_stats:  PROCEDURE
@@ -119,9 +133,20 @@ init_game_stats:  PROCEDURE
 END
 
 init_misc:  PROCEDURE
-    #COLOR_STACK_BG_SHIFT = &0010000000000000
-    #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
-    UNSIGNED #tmp_frame = 0
+    CONST #COLOR_STACK_BG_SHIFT = &0010000000000000
+    CONST #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
+    UNSIGNED #tmp_frame
+    #tmp_frame = 0
+    CONST BACKTAB_OUT_OF_BOUNDS_INDEX = 240
+    dying_boat_backtab_index = BACKTAB_OUT_OF_BOUNDS_INDEX
+    backtab_anim_frame = 0
+    backtab_anim_frame_timer = 0
+    UNSIGNED frames_per_sec
+    IF NTSC THEN
+        frames_per_sec = 60
+    ELSE
+        frames_per_sec = 50
+    END IF
 END
 
 init_dock_map_indexes:  PROCEDURE

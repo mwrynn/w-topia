@@ -48,8 +48,8 @@ map_cards:
     DATA OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO,OO
 
 'player ownership
-CONST YY = 1
-CONST ZZ = 2
+CONST YY = 0
+CONST ZZ = 1
 
 'map_ownership: 2D array that defines the owner of each land location
 'YY means player 1, ZZ means player 2, and OO means nothing
@@ -96,10 +96,12 @@ END
 '       (since we need to access the data via a single index)
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
-get_map_index_at_cursor:   PROCEDURE 'translates lower-right coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
-    map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
-    map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
-    map_index = 20*map_tile_y + map_tile_x
+get_map_index_at_cursor:   PROCEDURE 'translates upper-left coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
+    'map_tile_x = ((p_cur_x-8+4) - (p_cur_x-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
+    map_tile_x = (p_cur_x-4) / 8 'simplified from commented out expression in immediately preceding line
+    'map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
+    map_tile_y = (p_cur_y-4) / 8 'simplified from commented out expression in immediately preceding line
+    map_index = (16 * map_tile_y + 4 * map_tile_y) + map_tile_x 'intybasic docs say powers of 2 mult is internally optimized as bit shifts, so this is an optimization attempt
 END
 
 p1_finish_get_map_index_at_cursor: PROCEDURE
@@ -114,31 +116,24 @@ p2_finish_get_map_index_at_cursor: PROCEDURE
     'p2_map_index = map_index 'not used but can uncomment if that changes
 END
 
+'helper macros for the complex procedure get_cursor_backtab_overlaps below
+DEF FN card_is_land(#card) = (#card >= FIRST_LAND) AND (#card <= LAST_LAND)
+DEF FN is_fishing_boat(#card) = ((#card AND $FF00) = CARD_INDEX_FISHING_BOAT)  'selected card is fishing boat (as a card, not sprite, it is parked)
+DEF FN card_color_is_opponents(#card, player) = (#card AND $0007) = player_index_to_opponent_color(player)
+DEF FN get_collision_bits(#cursor_backtab_overlaps, i1, i2) = (#cursor_backtab_overlaps OR ((i1 + i2) * 4) OR $0002)  'set bit 1 and set collision index at bit 2-9
+
+
 '''
-'macro functions for colllision detection (ul == upper-left corner, etc.)
-'8 is the card size in both dimensions
-DEF FN tile_x_ul(x) = (x / 8 - 1)
-DEF FN tile_y_ul(y) = (y / 8 - 1)
-
-DEF FN tile_x_ur(x) = ((x + 7) / 8 - 1)
-DEF FN tile_y_ur(y) = (y / 8 - 1)
-
-DEF FN tile_x_ll(x) = (x / 8 - 1)
-DEF FN tile_y_ll(y) = ((y + 7) / 8 - 1)
-
-DEF FN tile_x_lr(x) = ((x + 7) / 8 - 1)
-DEF FN tile_y_lr(y) = ((y + 7) / 8 - 1)
-
-DEF FN tile_addr(x, y) = (20 * y + x)
-
-DEF FN is_land_tile(addr) = (#BACKTAB(addr) >= FIRST_LAND AND #BACKTAB(addr) <= LAST_LAND)
 
 'SPECIAL due to program flow and similarity between this and get_map_index_at_cursor,
 'including the fact that they use the same parameters, we do not use a
-'p[1|2]_setup_get_does_any_corner_of_cursor_overlap_land, but instead reuse p[1|2]_setup_get_map_index_at_cursor
+'p[1|2]_setup_get_cursor_overlaps, but instead reuse p[1|2]_setup_get_map_index_at_cursor
 
-'PROCEDURE get_does_any_corner_of_cursor_overlap_land: gets whether the four coordinates associated with a
-'   given p_cur_x/p_cur_y (which represents the upper left corner of sprite) overlaps with land
+'PROCEDURE get_cursor_backtab_overlaps: gets whether the four coordinates associated with a
+'   given p_cur_x/p_cur_y (which represents the upper left corner of sprite) overlaps with
+'   things of concern in #backtabs for collision purposes
+'   gets "flags" to indicate ALL types of things collided with
+'   different bits set for each type (see below)
 'PRECONDITIONS:
 '   call p[1|2]_setup_get_map_index_at_cursor
 '   alternatively, if already in a p1/p2-specific flow, p_cur_x, p_cur_y must have been set
@@ -146,17 +141,103 @@ DEF FN is_land_tile(addr) = (#BACKTAB(addr) >= FIRST_LAND AND #BACKTAB(addr) <= 
 '   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
 '   p_cur_y: pixel coordinate of the cursor's upper left corner for, y dimension
 'RETURNS:
-'   does_overlap: 1/0
+'   #cursor_backtab_overlaps:
+'       bit 0 (LSB): 1 if overlaps with land, else 0
+'       bit 1: 1 if overlaps with parked fishing boat belonging to opponent, else 0
+'       bit 2-9: if overlap with parked fishing boat, this is the backtab index of that boat; if no overlap then 00000000; if multiple collisiosn with parked fishing boats, an arbitrary one is chosen
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
-get_does_any_corner_of_cursor_overlap_land:   PROCEDURE 
-    does_overlap=0
+'   this will not return overlaps with any sprites - can use sprite collision detection for that
+get_cursor_backtab_overlaps:   PROCEDURE 
+    'a lot of repetition in this proc - part of intentional optimization - this was causing slow boat movement prior
 
-    'potential for optimization here (could precompute some of the vars in macros above...anything else??)
-    IF is_land_tile(tile_addr(tile_x_ul(p_cur_x), tile_y_ul(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ur(p_cur_x), tile_y_ur(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ll(p_cur_x), tile_y_ll(p_cur_y))) OR is_land_tile(tile_addr(tile_x_lr(p_cur_x), tile_y_lr(p_cur_y))) THEN
-        does_overlap=1
-        RETURN
+    'could potentially optimize this proc more using early RETURNs: if both bits are set an early RETURN may be possible
+    'however the vast majority of calls to this proc should be for non-collisions
+    'the collision case being suboptimal isn't the worst thing
+
+    'could also potentially optimize if a "parameter" is current cursor's form. if irrelvant type exit out of some logic sooner
+
+    #cursor_backtab_overlaps = $0000
+
+    '--- TOP LEFT CHECKS ---
+    left_i = (p_cur_x - 8) / 8       'cursor sprite's left edge index component
+    top_i = 20 * ((p_cur_y - 8) / 8) 'cursor sprite's top edge index component; needs to be multiplied by 20 to get correct row
+
+    '--- content at top-left corner ---
+    #card = #BACKTAB(top_i + left_i)
+
+    '--- land check ---
+    IF card_is_land(#card) THEN
+        #cursor_backtab_overlaps = $0001 'set bit 0
     END IF
+
+    '--- parked fishing boat check ---
+    IF is_fishing_boat(#card) THEN
+        IF (card_color_is_opponents(#card, player)) THEN ' combining this with above expression ANDed is slow due to apparent lack of short circuiting
+            #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, top_i, left_i)
+        END IF
+    END IF
+    '--- END TOP LEFT CHECKS ---
+
+    '--- TOP RIGHT CHECKS ---
+    right_i = (p_cur_x - 1) / 8 '(p_cur_x - 8 + 7) / 8 
+    'top_i already computed above in TOP LEFT CHECKS section
+
+    '--- content at top-right corner ---
+    #card = #BACKTAB(top_i + right_i)
+
+    '--- land check ---
+    IF card_is_land(#card) THEN
+        #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set first bit
+    END IF
+
+    '--- parked fishing boat check ---
+    IF is_fishing_boat(#card) THEN
+        IF (card_color_is_opponents(#card, player)) THEN 
+            #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, top_i, right_i)
+        END IF
+    END IF
+
+    '--- END TOP RIGHT CHECKS ---
+
+    '--- BOTTOM LEFT CHECKS ---
+    'corner_check_left already computed above in TOP LEFT CHECKS section
+
+    bottom_i = 20 * ((p_cur_y - 1) / 8) 'cursor sprite's bottom edge index component; needs to be multiplied by 20 to get correct row; simplified expr from 20 * ((p_cur_y - 8 + 7) / 8)
+
+    '--- content at bottom-left corner ---
+    #card = #BACKTAB(bottom_i + left_i)
+
+    '--- land check ---
+    IF card_is_land(#card) THEN
+        #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set bit 0
+    END IF
+
+    '--- parked fishing boat check ---
+    IF is_fishing_boat(#card) THEN
+        IF (card_color_is_opponents(#card, player)) THEN 
+            #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, bottom_i, left_i)
+        END IF
+    END IF
+
+    '--- BOTTOM RIGHT CHECKS ---
+    'already have bottom_i and right_i from above
+
+    '--- content at bottom-left corner ---
+    #card = #BACKTAB(bottom_i + right_i)
+
+    '--- land check ---
+    IF card_is_land(#card) THEN
+        #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set bit 0
+    END IF
+
+    '--- parked fishing boat check ---
+    IF is_fishing_boat(#card) THEN
+        IF (card_color_is_opponents(#card, player)) THEN 
+             #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, bottom_i, right_i)
+        END IF
+    END IF
+    '--- END BOTTOM RIGHT CHECKS ---
 END
 
 'SPECIAL due to program flow and similarity between this and get_map_index_at_cursor,
@@ -171,19 +252,20 @@ END
 'PARAMETERS:
 '   p_cur_x: pixel coordinate of the cursor's upper left corner for, x dimension
 '   p_cur_y: pixel coordinate of the cursor's upper left corner for, y dimension
+'   
 'RETURNS:
 '   does_overlap: 1/0
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
-get_does_any_corner_of_cursor_overlap_opponents_parked_pt_boat:   PROCEDURE 
-    does_overlap=0
+' get_does_any_corner_of_cursor_overlap_opponents_parked_pt_boat:   PROCEDURE 
+'     does_overlap=0
 
-    'potential for optimization here (could precompute some of the vars in macros above...anything else??)
-    IF is_land_tile(tile_addr(tile_x_ul(p_cur_x), tile_y_ul(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ur(p_cur_x), tile_y_ur(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ll(p_cur_x), tile_y_ll(p_cur_y))) OR is_land_tile(tile_addr(tile_x_lr(p_cur_x), tile_y_lr(p_cur_y))) THEN
-        does_overlap=1
-        RETURN
-    END IF
-END
+'     'potential for optimization here (could precompute some of the vars in macros above...anything else??)
+'     IF is_land_tile(tile_addr(tile_x_ul(p_cur_x), tile_y_ul(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ur(p_cur_x), tile_y_ur(p_cur_y))) OR is_land_tile(tile_addr(tile_x_ll(p_cur_x), tile_y_ll(p_cur_y))) OR is_land_tile(tile_addr(tile_x_lr(p_cur_x), tile_y_lr(p_cur_y))) THEN
+'         does_overlap=1
+'         RETURN
+'     END IF
+' END
 
 '''
 'commented out setup and finish procs because main proc get_map_ownership only called from a p1/p2 call stack (so far)
@@ -215,21 +297,21 @@ END
 'PARAMETERS:
     'map_index: the one-dimensional index of the tile in the map at which the boat's owner is returned
 'RETURNS:
-    'get_boat_ownership_result: the owner bits: 1 = player 1, 2 = player 2; 0 means no boat at map_index
+    'get_boat_ownership_result: the owner bits: 0 = player 1, 1 = player 2; -1 means no boat at map_index
 '''
 get_boat_ownership: PROCEDURE
     ' last 4 bits in backtab are color; used to determine player
     IF (#backtab(map_index) AND 7) = p1_color THEN
-        get_boat_ownership_result = 1
+        get_boat_ownership_result = 0
         RETURN
     END IF
 
     IF (#backtab(map_index) AND 7) = p2_color THEN
-        get_boat_ownership_result = 2
+        get_boat_ownership_result = 1
         RETURN
     END IF
 
-    get_boat_ownership_result = 0
+    get_boat_ownership_result = -1
 END
 
 
@@ -366,10 +448,6 @@ END
 '   player: need this to get the right color
 'MODIFIES: #backtab state to set the boat indicated by building_index at p_dock_map_index
 set_boat:   PROCEDURE
-    'doing this a bit silly to save a variable (setting boat_color = p[1|2]_color in the IF), may be able to inline the logic
-    IF player = 1 THEN 
-        #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p1_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
-    ELSE
-        #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + p2_color) AND #NEGATE_COLOR_STACK_BG_SHIFT
-    END IF
+    #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + player_index_to_color(player)) AND #NEGATE_COLOR_STACK_BG_SHIFT
 END
+
