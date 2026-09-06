@@ -6,9 +6,6 @@
 '*                                            *
 '**********************************************
 
-'TODO: FIX: I think wrong way to do it, because I recall being able to get NTSC/PAL from some variable
-CONST FRAMES_PER_SEC = 60
-
 'the following should eventually be user definable (therefore not consts)
 CONST CONST_TURNS_LEFT = 30
-CONST CONST_SECONDS_PER_TURN = 60
+CONST CONST_SECONDS_PER_TURN = 10

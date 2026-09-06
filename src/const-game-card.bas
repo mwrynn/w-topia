@@ -14,3 +14,8 @@ CONST CARD_NUM_LAND_2 = 17 'second block of land cards, because limit of 16 card
 CONST CARD_NUM_BUILD  = 18 
 CONST CARD_NUM_PT_BOAT = CARD_NUM_BUILD + 7
 CONST CARD_NUM_FISHING_BOAT = CARD_NUM_BUILD + 8
+CONST CARD_NUM_FISHING_BOAT_DEATH_ANIM = CARD_NUM_BUILD + 9
+
+' for checking the card data optimally, greater half of a 16-bit word matching this means it's a fishing boat
+CONST CARD_INDEX_FISHING_BOAT = 8 * $0100
+CONST CARD_INDEX_PT_BOAT = 7 * $0100

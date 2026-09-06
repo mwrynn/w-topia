@@ -84,9 +84,12 @@ END
 'the caller
 p1_setup_process_key_press: PROCEDURE
     p_key_pressed = p1_key_pressed
-    player = 1
+    player = 0
+    'other_player = 1 'not used
     p_cur_x = p1_cur_x
     p_cur_y = p1_cur_y
+    p_last_cur_x = p1_last_cur_x
+    p_last_cur_y = p1_last_cur_y
     #p_money = #p1_money
     p_registered_command = p1_registered_command
     p_last_num_key_pressed = p1_last_num_key_pressed
@@ -104,9 +107,12 @@ END
 
 p2_setup_process_key_press: PROCEDURE
     p_key_pressed = p2_key_pressed
-    player = 2
+    player = 1
+    'other_player = 0 'not used
     p_cur_x = p2_cur_x
     p_cur_y = p2_cur_y
+    p_last_cur_x = p2_last_cur_x
+    p_last_cur_y = p2_last_cur_y
     #p_money = #p2_money
     p_registered_command = p2_registered_command
     p_last_num_key_pressed = p2_last_num_key_pressed
@@ -169,16 +175,20 @@ process_key_press:  PROCEDURE
                 GOSUB invalid_key_press
                 RETURN
             ELSE 'command good so try to build the thing
+                'PRINT AT 8 COLOR p1_color, "pkp-1"
                 IF #p_money < build_costs(p_last_num_key_pressed-1) THEN 'player cannot afford it
+                    'PRINT AT 8 COLOR p1_color, "pkp-1a"
                     GOSUB invalid_key_press
                     RETURN
                 ELSE 'player can afford it
+                    'PRINT AT 8 COLOR p1_color, "pkp-1b"
                     GOSUB build
                     p_registered_command = KEY_NOTHING
                 END IF 
             END IF
 
         ELSEIF p_key_pressed >= 1 AND p_key_pressed <= 9 THEN
+            'PRINT AT 8 COLOR p1_color, "pkp-2"
             IF p_registered_command = KEY_NOTHING THEN
                 p_registered_command = p_key_pressed
             ELSE
@@ -186,6 +196,7 @@ process_key_press:  PROCEDURE
                 RETURN
             END IF
         ELSEIF p_key_pressed = KEY_CURSOR_SELECT THEN
+            'PRINT AT 8 COLOR p1_color, "pkp-2"
             'check if cursor on boat that player owns, and if so, select the boat!
             GOSUB attempt_to_select_boat
         END IF
@@ -210,6 +221,8 @@ p1_finish_process_key_press: PROCEDURE
     p1_current_form = p_current_form
     p1_cur_x = p_cur_x
     p1_cur_y = p_cur_y
+    p1_last_cur_x = p_last_cur_x
+    p1_last_cur_y = p_last_cur_y
     GOSUB p1_finish_get_map_index_at_cursor
 END
 
@@ -222,6 +235,8 @@ p2_finish_process_key_press: PROCEDURE
     p2_current_form = p_current_form
     p2_cur_x = p_cur_x
     p2_cur_y = p_cur_y
+    p2_last_cur_x = p_last_cur_x
+    p2_last_cur_y = p_last_cur_y
     GOSUB p2_finish_get_map_index_at_cursor
 END
 
@@ -235,7 +250,6 @@ END
     'p_cur_x: map pixel in x dimension (practically speaking, this is tbe top-left pixel of the cursor)
     'p_cur_y: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
     'player:
-    'p_color_low_bits: for use in setting card to a new one if necessary
 'RETURNS:
     '#p_cur_f new card if a boat is selected
     'p_current_form
@@ -247,6 +261,8 @@ END
     'backtab to remove boat from location
 attempt_to_select_boat:  PROCEDURE
     GOSUB can_select_boat_at_cursor
+
+    'PRINT AT 8 COLOR p1_color, <.1>can_select_boat_at_cursor_result
 
     IF can_select_boat_at_cursor_result = 1 THEN
          'change form and remove boat from map and have fun!
@@ -261,9 +277,9 @@ attempt_to_select_boat:  PROCEDURE
         p_last_cur_y = p_cur_y
 
         IF p_current_form = FORM_FISHING_BOAT THEN
-            #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_FISHING_BOAT * CARD_MULT
+            #p_cur_f = (#p_cur_f AND $F807) OR (CARD_NUM_FISHING_BOAT * CARD_MULT) 'AND F807 wipes all the card bits, then OR the fishing boat bits in
         ELSEIF p_current_form = FORM_PT_BOAT THEN
-            #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_PT_BOAT * CARD_MULT
+            #p_cur_f = (#p_cur_f AND $F807) OR (CARD_NUM_PT_BOAT * CARD_MULT) 'AND F807 wipes all the card bits, then OR the PT boat bits in
         ELSE
             'SHOULDN'T GET HERE!
             PRINT AT 8 COLOR p1_color, "WUT"
@@ -282,6 +298,7 @@ END
     'p_cur_y: map pixel in y dimension (practically speaking, this is tbe top-left pixel of the cursor)
     'player:
     'p_color_low_bits: for use in setting card to a new one if necessary
+    'p_current_form
 'RETURNS:
     'p_current_form
     'p_cur_x: if boat is selected, this is the upper left pixel coordinate of the boat location, x dim
@@ -297,8 +314,7 @@ attempt_to_switch_to_cursor:  PROCEDURE
         RETURN 
     END IF
 
-    GOSUB get_boat_type_at_cursor
-
+    building_index = 6 + p_current_form 'a bit hacky but the form should be 1 or 2, add 6 offsets properly for boats
     p_current_form = FORM_CURSOR
     #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
 
@@ -356,7 +372,6 @@ can_leave_boat_at_cursor:    PROCEDURE
     GOSUB get_boat_type_at_cursor
 
     IF get_boat_type_at_cursor_result = FORM_PT_BOAT OR get_boat_type_at_cursor_result = FORM_FISHING_BOAT THEN
-        'PRINT AT 6 COLOR p1_color, <.3>get_boat_type_at_cursor_result
         can_leave_boat_at_cursor_result = 0
         RETURN
     END IF
@@ -374,7 +389,11 @@ END
 get_boat_type_at_cursor:    PROCEDURE
     GOSUB get_map_index_at_cursor
     'TODO document the formula below
+    'PRINT AT 5 COLOR WHITE, <.3>map_index
+
     get_boat_type_at_cursor_result = (((#backtab(map_index) AND NOT 7) - CARD_BASELINE) / CARD_MULT) - CARD_NUM_BUILD - 6
+
+    'PRINT AT 30 COLOR WHITE, <.3>get_boat_type_at_cursor_result
 END
 
 '''
@@ -405,7 +424,6 @@ build:  PROCEDURE
     IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 
         GOSUB can_build_at_cursor
         IF can_build_at_cursor_result THEN
-            
             #p_money = #p_money - build_costs(building_index)         
             GOSUB set_building
         ELSE
@@ -415,6 +433,9 @@ build:  PROCEDURE
         p_registered_command=p_registered_command 'doing this as NOOP until I can figure out a proper way to do it
     ELSEIF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN
         GOSUB can_build_at_dock
+
+        PRINT AT 3 COLOR p1_color, <.3>can_build_at_dock_result
+
         IF can_build_at_dock_result THEN
             #p_money = #p_money - build_costs(building_index)
             map_index_to_set_boat_at = p_dock_map_index
@@ -449,17 +470,23 @@ END
 'RETURNS:
     'can_build_at_cursor_result (1/0)
 can_build_at_cursor:    PROCEDURE
+    'PRINT AT 8 COLOR p1_color, "can-build-0"
     IF p_registered_command >= KEY_FORT AND p_registered_command <= KEY_HOUSE THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
+        'PRINT AT 8 COLOR p1_color, "can-build-1"  
         GOSUB get_map_index_at_cursor
         GOSUB get_map_ownership
 
         IF map_ownership_result = player THEN
+            'PRINT AT 8 COLOR p1_color, "can-build-1a"
             'verify no building preexists at location
             GOSUB has_building
             IF NOT ret_has_building THEN
+                'PRINT AT 8 COLOR p1_color, "can-build-1b"
                 can_build_at_cursor_result = 1
                 RETURN
             END IF
+        'ELSE
+            'PRINT AT 8 COLOR p1_color, "can-build-1c"
         END IF
     END IF
     can_build_at_cursor_result = 0
@@ -489,6 +516,7 @@ can_build_at_dock:    PROCEDURE
     IF p_registered_command = KEY_PT_BOAT OR p_registered_command = KEY_FISHING_BOAT THEN    
         GOSUB is_dock_tile_occupied
         IF ret_is_dock_tile_occupied = 1 THEN
+            PRINT AT 23 COLOR p1_color, <.3>ret_is_dock_tile_occupied
             can_build_at_dock_result = 0
             RETURN
         END IF

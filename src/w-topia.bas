@@ -4,9 +4,9 @@
 'so jump to main to get right into our program flow without surprises
 GOTO main
 
-'note: cannot give INCLUDE a relative path, just a filename; so don't try to refactor :)
+'note: cannot give INCLUDE a relative path, just a filename; so don't try to reorg into subdirs :)
 'note: you also cannot have recursive includes,
-'therefore we could not make for example a const-all.bas that includes all the following
+'therefore we could not make for example a const-all.bas that includes all the const includes
 
 'includes: const
 INCLUDE "const-intv-color.bas"
@@ -18,11 +18,13 @@ INCLUDE "const-game-player.bas"
 INCLUDE "const-game-card.bas"
 INCLUDE "const-game-sprite.bas"
 INCLUDE "const-game-misc.bas"
+INCLUDE "const-game-player-anim.bas"
 
 'includes: bitmap
 INCLUDE "bitmap-cursor.bas"
 INCLUDE "bitmap-land.bas"
 INCLUDE "bitmap-build.bas"
+INCLUDE "bitmap-fishing-boat-death-anim.bas"
 
 'includes: other
 INCLUDE "init.bas"
@@ -34,6 +36,7 @@ INCLUDE "cursor-move-data.bas"
 INCLUDE "build.bas"
 INCLUDE "num-keys.bas"
 INCLUDE "status-bar.bas"
+INCLUDE "anim.bas"
 
 main:
     GOSUB init
@@ -42,8 +45,19 @@ main:
     GOTO game_loop
 
 game_loop:
-    SPRITE 0, p1_cur_x + CUR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE + (p1_mirror_x * Y_MIRROR_X), #p1_cur_f
-    SPRITE 1, p2_cur_x + CUR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE + (p2_mirror_x * Y_MIRROR_X), #p2_cur_f
+    SPRITE 0, p1_cur_x + CURSOR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE + (p1_mirror_x * Y_MIRROR_X), #p1_cur_f
+    SPRITE 1, p2_cur_x + CURSOR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE + (p2_mirror_x * Y_MIRROR_X), #p2_cur_f
+
+    'debugs for p#_cur_[x|y] and p#_last_cur[x|y]
+    ' PRINT AT 1 COLOR p1_color,<.3>p1_cur_x
+    ' PRINT AT 5 COLOR p1_color,<.3>p1_cur_y
+    ' PRINT AT 1+20 COLOR p1_color,<.3>p1_last_cur_x
+    ' PRINT AT 5+20 COLOR p1_color,<.3>p1_last_cur_y
+
+    ' PRINT AT 8 COLOR p2_color,<.3>p2_cur_x
+    ' PRINT AT 12 COLOR p2_color,<.3>p2_cur_y
+    ' PRINT AT 8+20 COLOR p2_color,<.3>p2_last_cur_x
+    ' PRINT AT 12+20 COLOR p2_color,<.3>p2_last_cur_y
 
     'capture input
     p1_cont_input = CONT1
@@ -87,6 +101,11 @@ game_loop:
     GOSUB process_key_press
     GOSUB p2_finish_process_key_press
 
+    'update animations
+    GOSUB p1_setup_update_anim
+    GOSUB update_anim
+    GOSUB p1_finish_update_anim
+
     GOSUB if_second_passed_dec_timer
     GOSUB update_status_bar
 
@@ -98,12 +117,9 @@ game_loop:
     GOTO game_loop
 
 if_second_passed_dec_timer:  PROCEDURE
-    'potential optimization: do a quicker check than mod that can catch most false case more quickly
-    'for example if the last bit is 1 then it's odd so cannot be divisible by FRAMES_PER_SEC
-    '(which should only ever be 60 or 50)
-    'but need to think about and test a better optimization
-    IF FRAME % FRAMES_PER_SEC = 0 THEN
+    IF FRAME - #tmp_frame >= frames_per_sec THEN
         seconds_left = seconds_left - 1
+        #tmp_frame = FRAME
     END IF
 END
 
