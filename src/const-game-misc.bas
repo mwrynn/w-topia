@@ -8,4 +8,4 @@
 
 'the following should eventually be user definable (therefore not consts)
 CONST CONST_TURNS_LEFT = 30
-CONST CONST_SECONDS_PER_TURN = 60
+CONST CONST_SECONDS_PER_TURN = 10
