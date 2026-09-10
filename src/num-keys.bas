@@ -156,6 +156,10 @@ END
 attempt_to_select_boat:  PROCEDURE
     GOSUB can_select_boat_at_cursor
 
+    DIM can_select_boat_at_cursor_result
+    DIM get_boat_type_at_cursor_result
+    DIM can_leave_boat_at_cursor_result
+
     IF can_select_boat_at_cursor_result = 1 THEN
          'change form and remove boat from map and have fun!
         GOSUB get_boat_type_at_cursor
@@ -304,6 +308,8 @@ END
 'assumes that having enough money (#p_money) has already been checked
 'deducts money from #p_money; after calling this, caller must set #p[1|2]_money accordingly
 build:  PROCEDURE
+    DIM can_build_at_cursor_result
+    DIM can_build_at_dock_result
     'any building case
     building_index = registered_command(p) - 1
     IF registered_command(p) >= KEY_FORT AND registered_command(p) <= KEY_HOUSE THEN 
@@ -348,6 +354,7 @@ END
 'RETURNS:
     'can_build_at_cursor_result (1/0)
 can_build_at_cursor:    PROCEDURE
+
     IF registered_command(p) >= KEY_FORT AND registered_command(p) <= KEY_HOUSE THEN 'any "building" i.e. not a boat/rebel, must be on land owned by player
         GOSUB get_map_index_at_cursor
         GOSUB get_map_ownership
