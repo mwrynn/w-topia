@@ -35,100 +35,89 @@ init:   PROCEDURE
     GOSUB init_num_key_states
     GOSUB init_dock_map_indexes
     GOSUB init_misc
-    
-    SIGNED p_cont_input
-END
-    
-init_cursor:    PROCEDURE
-    p_cur_x = 0 'used in procedure
-    p_cur_y = 0 'used in procedure
-    p1_cur_x = P1_CUR_STARTING_X
-    p1_cur_y = P1_CUR_STARTING_Y
-    p2_cur_x = P2_CUR_STARTING_X
-    p2_cur_y = P2_CUR_STARTING_Y
-    SIGNED p_cur_x_move_points, p_cur_y_move_points   'for procedure call; maybe make generic arg1 etc.
-    SIGNED p1_cur_x_move_points, p1_cur_y_move_points
-    SIGNED p2_cur_x_move_points, p2_cur_y_move_points
-    p_cur_x_move_points = 0 'for procedure call; maybe make generic arg1, etc.
-    p_cur_y_move_points = 0 'for procedure call; maybe make generic arg1, etc.
-    p1_cur_x_move_points = 0
-    p1_cur_y_move_points = 0
-    p2_cur_x_move_points = 0
-    p2_cur_y_move_points = 0
-    #p1_cur_f = CARD_BASELINE + p1_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
-    p_mirror_x = 0
-    p1_mirror_x = 0
-    p2_mirror_x = 0
-
-    'to avoid using a scarce 16-bit int just for high bit.
-    '($1000 AND p1_color_high_bit) in the sprite call doesn't work
-    'maybe because a 16-bit int AND an 8-bit int doesn't result in a 16-bit int?
-    IF p1_color_high_bit = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND p1_color_high_bit) doesn't work
-        #p1_cur_f = #p1_cur_f + $1000
-    END IF
-
-    #p2_cur_f = CARD_BASELINE + p2_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
-    IF p2_color_high_bit = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND p2_color_high_bit) doesn't work
-        #p2_cur_f = #p2_cur_f + $1000
-    END IF
 END
 
 'set up color data including high and low bits for both players; used in SPRITE call
 init_player_colors: PROCEDURE
-    p1_color = DARK_GREEN 'the intention is eventually to allow user input to choose player colors
-    p2_color = RED
-
-    IF p1_color > $7 THEN '$7 is 111 in binary, so anything greater requires the high bit to be set in call to SPRITE
-        p1_color_high_bit = 1
-        p1_color_low_bits = p1_color AND $7
-    ELSE
-        p1_color_high_bit = 0
-        p1_color_low_bits = p1_color
-    END IF
-
-    IF p2_color > $7 THEN
-        p2_color_high_bit = 1
-        p2_color_low_bits = p2_color AND $7
-    ELSE
-        p2_color_high_bit = 0
-        p2_color_low_bits = p2_color
-    END IF
-
-    DIM player_index_to_color(2)
-    player_index_to_color(0)=p1_color
-    player_index_to_color(1)=p2_color
-
+    DIM player_color(N_PLAYERS)
+    DIM player_color_high_bit(N_PLAYERS)
+    DIM player_color_low_bits(N_PLAYERS)
+    DIM player_index_to_color(N_PLAYERS)
     DIM player_index_to_opponent_color(2)
-    player_index_to_opponent_color(0)=p2_color
-    player_index_to_opponent_color(1)=p1_color
+
+    FOR i = 0 TO (N_PLAYERS-1)
+        player_color(i) = player_default_color(i)
+
+        IF player_color(i) > $7 THEN
+            player_color_high_bit(i) = 1
+            player_color_low_bits(i) = player_color(i) AND $7
+        ELSE
+            player_color_high_bit(i) = 0
+            player_color_low_bits(i) = player_color(i)
+        END IF
+
+        player_index_to_color(i) = player_color(i)
+
+        player_index_to_opponent_color(i) = player_color(i XOR 1)
+    NEXT i
+END
+    
+init_cursor:    PROCEDURE
+    DIM cur_x(N_PLAYERS) 
+    DIM cur_y(N_PLAYERS)
+    DIM last_cur_x(N_PLAYERS)
+    DIM last_cur_y(N_PLAYERS)
+    DIM cur_x_move_points(N_PLAYERS)
+    SIGNED cur_x_move_points
+    DIM cur_y_move_points(N_PLAYERS)
+    SIGNED cur_y_move_points
+    DIM #cur_f(N_PLAYERS)
+    DIM mirror_x(N_PLAYERS)
+    DIM other_cur_x(N_PLAYERS)
+    DIM other_cur_y(N_PLAYERS)
+    DIM current_form(N_PLAYERS)
+    DIM other_current_form(N_PLAYERS)
+
+    FOR i = 0 TO (N_PLAYERS-1)
+        cur_x(i) = cur_starting_x(i)
+        cur_y(i) = cur_starting_y(i)
+
+        #cur_f(i) = CARD_BASELINE + player_color_low_bits(i) + CARD_NUM_CURSOR * CARD_MULT
+
+        IF player_color_high_bit(i) = 1 THEN 'to avoid using a 16-bit int just for high bit. ($1000 AND player_color_high_bit(i)) doesn't work
+            #cur_f(i) = #cur_f(i) + $1000
+        END IF
+
+        current_form(i) = FORM_CURSOR
+        other_current_form(i XOR 1) = FORM_CURSOR
+
+        cur_x_move_points(i) = 0
+        cur_y_move_points(i) = 0
+    NEXT i
 END
 
+
 init_player_stats:  PROCEDURE
-    #p1_money = STARTING_MONEY 
-    #p2_money = STARTING_MONEY
+    DIM #money(N_PLAYERS)
+    DIM #score(N_PLAYERS)
+    DIM #population(N_PLAYERS)
+    DIM #last_turns_score(N_PLAYERS)
+    DIM anim_frame(N_PLAYERS)
+    DIM anim_frame_timer(N_PLAYERS)
 
-    #p1_score = 0
-    #p2_score = 0
-
-    #p1_population = STARTING_POPULATION
-    #p2_population = STARTING_POPULATION
-
-    #p1_last_turns_score = 0
-    #p2_last_turns_score = 0
-
-    p1_current_form = FORM_CURSOR
-    p2_current_form = FORM_CURSOR
-
-    p1_anim_frame = 0
-    p2_anim_frame = 0
-
-    p1_anim_frame_timer = 0
-    p2_anim_frame_timer = 0
+    FOR i = 0 TO (N_PLAYERS-1)
+        #money(i) = STARTING_MONEY
+        #score(i) = 0
+        #population(i) = STARTING_POPULATION
+        #last_turns_score(i) = 0
+        anim_frame(i) = 0
+        anim_frame_timer(i) = 0
+    NEXT i
 END
 
 init_game_stats:  PROCEDURE
-    turns_left = CONST_TURNS_LEFT
-    seconds_per_turn = CONST_SECONDS_PER_TURN
+    turns_left = HARDCODED_TURNS_LEFT
+    seconds_per_turn = HARDCODED_SECONDS_PER_TURN
     seconds_left = seconds_per_turn
 END
 
@@ -147,18 +136,30 @@ init_misc:  PROCEDURE
     ELSE
         frames_per_sec = 50
     END IF
+    
+    DIM cont_input(N_PLAYERS)
+    DIM cont_input_key(N_PLAYERS)
+    DIM #col(N_PLAYERS) 'collision data
+    DIM sprite_index(N_PLAYERS)
+    DIM other_sprite_index(N_PLAYERS)
+    DIM should_show_score(N_PLAYERS)
+    DIM should_show_population(N_PLAYERS)
+    DIM should_show_last_turns_score(N_PLAYERS)
+    DIM side_button_state(N_PLAYERS)
+    DIM last_num_key_pressed(N_PLAYERS)
+    DIM registered_command(N_PLAYERS)
+    DIM key_pressed(N_PLAYERS) 
+    
+    FOR i = 0 TO (N_PLAYERS-1)
+        sprite_index(i) = i
+        other_sprite_index(i) = (i XOR 1)
+    NEXT i
 END
 
 init_dock_map_indexes:  PROCEDURE
-    GOSUB p1_init_dock_map_index
-    GOSUB p2_init_dock_map_index
-END
+    DIM dock_map_index(N_PLAYERS)
 
-p1_init_dock_map_index:  PROCEDURE
-    p1_dock_map_index = 20*build_dock_y(0) + build_dock_x(0)
+    FOR i = 0 TO (N_PLAYERS-1)
+        dock_map_index(i) = 20*build_dock_y(i) + build_dock_x(i)
+    NEXT i
 END
-
-p2_init_dock_map_index:  PROCEDURE
-    p2_dock_map_index = 20*build_dock_y(1) + build_dock_x(1)
-END
-

@@ -7,13 +7,14 @@
 '*                                        *
 '******************************************
 
-'player 1 cursor constants
-CONST P1_CUR_STARTING_X = 20
-CONST P1_CUR_STARTING_Y = 20
+cur_starting_x: 'pixel index for starting location (x coord), indexed by player index
+	DATA 20,100
 
-'player 2 cursor constants
-CONST P2_CUR_STARTING_X = 100
-CONST P2_CUR_STARTING_Y = 20
+cur_starting_y: 'pixel index for starting location (y coord), indexed by player index
+	DATA 20,20
+
+player_default_color:
+    DATA DARK_GREEN, RED
 
 CONST STARTING_MONEY = 500 'in original game this is 100
 CONST STARTING_POPULATION = 1000 'in original game this is 1000 (I think; should verify)

@@ -1,89 +1,54 @@
 'input processing for side buttons
 
-'''
-
-p1_setup_get_side_button_state: PROCEDURE
-    p_cont_input = p1_cont_input
-END
-
-p2_setup_get_side_button_state: PROCEDURE
-    p_cont_input = p2_cont_input
-END
-
+'PROCEDURE get_side_button_state:
+'PRECONDITIONS:
+    'p is set
+'POSTCONDITIONS:
+    'NONE
+'PARAMETERS:
+    'cont_input: item-per-player array
+'RETURNS:
+    'side_button_state (for p index)
 get_side_button_state:    PROCEDURE
-    p_side_button_state = p_cont_input AND $E0
+    side_button_state(p) = cont_input(p) AND $E0
 END
 
-p1_finish_get_side_button_state: PROCEDURE
-    p1_side_button_state = p_side_button_state
-END
-    
-p2_finish_get_side_button_state: PROCEDURE
-    p2_side_button_state = p_side_button_state
-END
-
-'''
-
-p1_setup_should_show_score: PROCEDURE
-    p_side_button_state = p1_side_button_state
-END
-
-p2_setup_should_show_score: PROCEDURE
-    p_side_button_state = p2_side_button_state
+'PROCEDURE get_should_show_score:
+'PRECONDITIONS:
+    'p is set
+'POSTCONDITIONS:
+    'NONE
+'PARAMETERS:
+    'side_button_state: item-per-player array 
+'RETURNS:
+    'should_show_score set to 0 or 1 (for p index)
+get_should_show_score:   PROCEDURE
+    should_show_score(p) = (side_button_state(p) = SIDE_BUTTON_TOP) 
 END
 
-should_show_score:   PROCEDURE
-    p_should_show_score = (p_side_button_state = SIDE_BUTTON_TOP) 
+'PROCEDURE get_should_show_population:
+'PRECONDITIONS:
+    'p is set
+'POSTCONDITIONS:
+    'NONE
+'PARAMETERS:
+    'side_button_state: item-per-player array 
+'RETURNS:
+    'should_show_population set to 0 or 1 (for p index)
+get_should_show_population:   PROCEDURE
+    should_show_population(p) = (side_button_state(p) = SIDE_BUTTON_LEFT_BOTTOM) 
 END
 
-p1_finish_should_show_score: PROCEDURE
-    p1_should_show_score = p_should_show_score
+'PROCEDURE get_should_show_last_turns_score:
+'PRECONDITIONS:
+    'p is set
+'POSTCONDITIONS:
+    'NONE
+'PARAMETERS:
+    'side_button_state: item-per-player array 
+'RETURNS:
+    'should_show_population set to 0 or 1 (for p index)
+get_should_show_last_turns_score:   PROCEDURE
+    should_show_last_turns_score(p) = (side_button_state(p) = SIDE_BUTTON_RIGHT_BOTTOM)
 END
 
-p2_finish_should_show_score: PROCEDURE
-    p2_should_show_score = p_should_show_score
-END
-
-'''
-
-p1_setup_should_show_population: PROCEDURE
-    p_side_button_state = p1_side_button_state
-END
-
-p2_setup_should_show_population: PROCEDURE
-    p_side_button_state = p2_side_button_state
-END
-
-should_show_population:   PROCEDURE
-    p_should_show_population = (p_side_button_state = SIDE_BUTTON_LEFT_BOTTOM) 
-END
-
-p1_finish_should_show_population: PROCEDURE
-    p1_should_show_population = p_should_show_population
-END
-
-p2_finish_should_show_population: PROCEDURE
-    p2_should_show_population = p_should_show_population
-END
-
-'''
-
-p1_setup_should_show_last_turns_score: PROCEDURE
-    p_side_button_state = p1_side_button_state
-END
-
-p2_setup_should_show_last_turns_score: PROCEDURE
-    p_side_button_state = p2_side_button_state
-END
-
-should_show_last_turns_score:   PROCEDURE
-    p_should_show_last_turns_score = (p_side_button_state = SIDE_BUTTON_RIGHT_BOTTOM)
-END
-
-p1_finish_should_show_last_turns_score: PROCEDURE
-    p1_should_show_last_turns_score = p_should_show_last_turns_score
-END
-
-p2_finish_should_show_last_turns_score: PROCEDURE
-    p2_should_show_last_turns_score = p_should_show_last_turns_score
-END

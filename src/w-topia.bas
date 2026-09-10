@@ -1,5 +1,6 @@
 'Game of W-Topia
 
+'OPTION EXPLICIT ON
 'any procedure definitions in includes would get executed as any other code
 'so jump to main to get right into our program flow without surprises
 GOTO main
@@ -45,67 +46,29 @@ main:
     GOTO game_loop
 
 game_loop:
-    SPRITE 0, p1_cur_x + CURSOR_X_PARAMS, p1_cur_y + Y_NORMAL_SCALE + (p1_mirror_x * Y_MIRROR_X), #p1_cur_f
-    SPRITE 1, p2_cur_x + CURSOR_X_PARAMS, p2_cur_y + Y_NORMAL_SCALE + (p2_mirror_x * Y_MIRROR_X), #p2_cur_f
-
-    'debugs for p#_cur_[x|y] and p#_last_cur[x|y]
-    ' PRINT AT 1 COLOR p1_color,<.3>p1_cur_x
-    ' PRINT AT 5 COLOR p1_color,<.3>p1_cur_y
-    ' PRINT AT 1+20 COLOR p1_color,<.3>p1_last_cur_x
-    ' PRINT AT 5+20 COLOR p1_color,<.3>p1_last_cur_y
-
-    ' PRINT AT 8 COLOR p2_color,<.3>p2_cur_x
-    ' PRINT AT 12 COLOR p2_color,<.3>p2_cur_y
-    ' PRINT AT 8+20 COLOR p2_color,<.3>p2_last_cur_x
-    ' PRINT AT 12+20 COLOR p2_color,<.3>p2_last_cur_y
+    SPRITE 0, cur_x(0) + CURSOR_X_PARAMS, cur_y(0) + Y_NORMAL_SCALE + (mirror_x(0) * Y_MIRROR_X), #cur_f(0)
+    SPRITE 1, cur_x(1) + CURSOR_X_PARAMS, cur_y(1) + Y_NORMAL_SCALE + (mirror_x(1) * Y_MIRROR_X), #cur_f(1)
 
     'capture input
-    p1_cont_input = CONT1
-    p1_cont_input_key = CONT1.key 'can't "reference" cont_input1.key later so must capture like this
-    p2_cont_input = CONT2
-    p2_cont_input_key = CONT2.key
+    cont_input(0) = CONT1
+    cont_input_key(0) = CONT1.key 'can't "reference" key later so must capture like this
+    cont_input(1) = CONT2
+    cont_input_key(1) = CONT2.key
 
-    'p1 move cursor logic
-    GOSUB p1_setup_move_cursor
-    GOSUB move_cursor
-    GOSUB p1_finish_move_cursor
+    'capture collision state
+    #col(0) = COL0
+    #col(1) = COL1
 
-    'p2 move cursor logic
-    GOSUB p2_setup_move_cursor
-    GOSUB move_cursor
-    GOSUB p2_finish_move_cursor
+    'move cursor logic
+    FOR p = 0 TO (N_PLAYERS-1)
+        GOSUB move_cursor
+        GOSUB get_side_button_state
+        GOSUB get_num_key_press
+        GOSUB process_key_press
+        GOSUB update_anim_player
+    NEXT p
 
-    'process side button/status bar changes
-    GOSUB p1_setup_get_side_button_state
-    GOSUB get_side_button_state
-    GOSUB p1_finish_get_side_button_state
-    
-    GOSUB p2_setup_get_side_button_state
-    GOSUB get_side_button_state
-    GOSUB p2_finish_get_side_button_state
-
-    'process number key presses
-    GOSUB p1_setup_get_num_key_press
-    GOSUB get_num_key_press
-    GOSUB p1_finish_get_num_key_press
-
-    GOSUB p1_setup_process_key_press
-    GOSUB process_key_press
-    GOSUB p1_finish_process_key_press
-
-    GOSUB p2_setup_get_num_key_press
-    GOSUB get_num_key_press
-    GOSUB p2_finish_get_num_key_press
-
-    GOSUB p2_setup_process_key_press
-    GOSUB process_key_press
-    GOSUB p2_finish_process_key_press
-
-    'update animations
-    GOSUB p1_setup_update_anim
-    GOSUB update_anim
-    GOSUB p1_finish_update_anim
-
+    GOSUB update_anim_global
     GOSUB if_second_passed_dec_timer
     GOSUB update_status_bar
 
@@ -127,14 +90,18 @@ end_turn:   PROCEDURE
     'do end of turn displays + sounds (bing bong bung)
     'bing: scores for this turn that is ending; says SCORES (one char to the left of right most turn number) in white
     PRINT AT 225 COLOR WHITE,"SCORES"
-    GOSUB p1_show_last_turns_score
-    GOSUB p2_show_last_turns_score
+    p = 0 
+    GOSUB show_last_turns_score
+    p = 1
+    GOSUB show_last_turns_score
     GOSUB play_sound_bing
     
     'bong: total scores; says TOTALS in same location
     PRINT AT 225 COLOR WHITE,"TOTALS"
-    GOSUB p1_show_score
-    GOSUB p2_show_score
+    p = 0
+    GOSUB show_score
+    p = 1
+    GOSUB show_score
 
     GOSUB play_sound_bong
     

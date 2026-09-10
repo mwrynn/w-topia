@@ -1,12 +1,4 @@
-p1_setup_update_anim: PROCEDURE
-    #p_cur_f = #p1_cur_f
-    p_anim_frame = p1_anim_frame
-    p_anim_frame_timer = p1_anim_frame_timer
-    p_current_form = p1_current_form
-    p_color_low_bits = p1_color_low_bits
-END
-
-update_anim: PROCEDURE
+update_anim_global: PROCEDURE
     'handle dying boat animation
     IF dying_boat_backtab_index <> BACKTAB_OUT_OF_BOUNDS_INDEX THEN
         IF backtab_anim_frame = 0 THEN
@@ -31,35 +23,34 @@ update_anim: PROCEDURE
             END IF
         END IF
     END IF
+END
 
+' update player-specific animations
+' PRECONDITIONS:
+    'p is set
+update_anim_player: PROCEDURE
     'case of player's active fishing boat dying
-    IF p_current_form = FORM_DYING_FISHING_BOAT THEN
+    IF current_form(p) = FORM_DYING_FISHING_BOAT THEN
 
-        IF p_anim_frame = 0 THEN 'hacky case for first death frame
-            #p_cur_f = CARD_BASELINE + p_color_low_bits + (CARD_NUM_FISHING_BOAT_DEATH_ANIM + p_anim_frame) * CARD_MULT
+        IF anim_frame(p) = 0 THEN 'hacky case for first death frame
+            #cur_f(p) = CARD_BASELINE + player_color_low_bits(p) + (CARD_NUM_FISHING_BOAT_DEATH_ANIM + anim_frame(p)) * CARD_MULT
         END IF
 
-        p_anim_frame_timer = p_anim_frame_timer + 1
+        anim_frame_timer(p) = anim_frame_timer(p) + 1
 
-        IF p_anim_frame_timer = FRAMES_PER_BOAT_DEATH_INCREMENT THEN
-            p_anim_frame_timer = 0
-            p_anim_frame = p_anim_frame + 1
+        IF anim_frame_timer(p) = FRAMES_PER_BOAT_DEATH_INCREMENT THEN
+            anim_frame_timer(p) = 0
+            anim_frame(p) = anim_frame(p) + 1
 
-            IF p_anim_frame > FISHING_BOAT_DEATH_ANIM_FINAL_INDEX THEN 'done dying
-                p_current_form = FORM_CURSOR
-                p_anim_frame = 0
-                p_anim_frame_timer = 0
-                #p_cur_f = CARD_BASELINE + p_color_low_bits + CARD_NUM_CURSOR * CARD_MULT
+            IF anim_frame(p) > FISHING_BOAT_DEATH_ANIM_FINAL_INDEX THEN 'done dying
+                current_form(p) = FORM_CURSOR
+                other_current_form(p XOR 1) = FORM_CURSOR
+                anim_frame(p) = 0
+                anim_frame_timer(p) = 0
+                #cur_f(p) = CARD_BASELINE + player_color_low_bits(p) + CARD_NUM_CURSOR * CARD_MULT
             ELSE
-                #p_cur_f = CARD_BASELINE + p_color_low_bits + (CARD_NUM_FISHING_BOAT_DEATH_ANIM + p_anim_frame) * CARD_MULT
+                #cur_f(p) = CARD_BASELINE + player_color_low_bits(p) + (CARD_NUM_FISHING_BOAT_DEATH_ANIM + anim_frame(p)) * CARD_MULT
             END IF
         END IF
     END IF
-END
-
-p1_finish_update_anim: PROCEDURE
-    #p1_cur_f = #p_cur_f
-    p1_anim_frame = p_anim_frame
-    p1_anim_frame_timer = p_anim_frame_timer
-    p1_current_form = p_current_form
 END
