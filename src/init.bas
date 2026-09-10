@@ -28,6 +28,9 @@ init:   PROCEDURE
     DEFINE CARD_NUM_FISHING_BOAT_DEATH_ANIM, 5, fishing_boat_death_anim_bitmaps
     WAIT
 
+    DIM i 'for for loops
+    DIM p 'player index
+
     GOSUB init_player_colors
     GOSUB init_cursor
     GOSUB init_player_stats
@@ -73,8 +76,6 @@ init_cursor:    PROCEDURE
     SIGNED cur_y_move_points
     DIM #cur_f(N_PLAYERS)
     DIM mirror_x(N_PLAYERS)
-    DIM other_cur_x(N_PLAYERS)
-    DIM other_cur_y(N_PLAYERS)
     DIM current_form(N_PLAYERS)
     DIM other_current_form(N_PLAYERS)
 
@@ -116,6 +117,12 @@ init_player_stats:  PROCEDURE
 END
 
 init_game_stats:  PROCEDURE
+    DIM turns_left
+    DIM last_turns_left
+    DIM seconds_per_turn
+    DIM seconds_left
+    DIM last_seconds_left
+
     turns_left = HARDCODED_TURNS_LEFT
     seconds_per_turn = HARDCODED_SECONDS_PER_TURN
     seconds_left = seconds_per_turn
@@ -124,13 +131,16 @@ END
 init_misc:  PROCEDURE
     CONST #COLOR_STACK_BG_SHIFT = &0010000000000000
     CONST #NEGATE_COLOR_STACK_BG_SHIFT = &1101111111111111
+    DIM #tmp_frame
     UNSIGNED #tmp_frame
     #tmp_frame = 0
     CONST BACKTAB_OUT_OF_BOUNDS_INDEX = 240
+    DIM dying_boat_backtab_index
     dying_boat_backtab_index = BACKTAB_OUT_OF_BOUNDS_INDEX
+    DIM backtab_anim_frame, backtab_anim_frame_timer
     backtab_anim_frame = 0
     backtab_anim_frame_timer = 0
-    UNSIGNED frames_per_sec
+    DIM frames_per_sec
     IF NTSC THEN
         frames_per_sec = 60
     ELSE

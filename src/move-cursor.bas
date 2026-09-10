@@ -48,6 +48,8 @@ move_cursor:   PROCEDURE
         RETURN
     END IF
 
+    DIM #cursor_backtab_overlaps
+
     cur_x_move_points(p) = cur_x_move_points(p) + direction_offset_x(cont_input(p) AND $1F)
     cur_y_move_points(p) = cur_y_move_points(p) + direction_offset_y(cont_input(p) AND $1F)
 
@@ -116,9 +118,7 @@ move_cursor:   PROCEDURE
             'if the current PT boat collided with a fishing boat sprite (as opposed to a parked fishing boat which is NOT a sprite)
 
             IF #col(p) AND bit_mask(other_sprite_index(p)) THEN
-                PRINT AT 8 COLOR player_color(0), "C"
                 IF other_current_form(p) = FORM_FISHING_BOAT THEN
-                    PRINT AT 9 COLOR player_color(0), "F"
                     'boom! so turn other sprite into dying fishing boat
                     other_current_form(p) = FORM_DYING_FISHING_BOAT
                     current_form(p XOR 1) = FORM_DYING_FISHING_BOAT

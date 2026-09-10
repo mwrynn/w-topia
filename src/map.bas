@@ -73,6 +73,13 @@ map_ownership:
     DATA WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW
     DATA WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW
 
+DIM map_ownership_result
+DIM get_boat_ownership_result
+DIM ret_has_building
+DIM building_index
+DIM ret_is_dock_tile_occupied
+DIM map_index_to_set_boat_at
+
 '''
 
 'PROCEDURE get_map_index_at_cursor: gets the map tile that the cursor is most closely placed over
@@ -89,6 +96,7 @@ map_ownership:
 'NOTES:
 '   a "tile index" refers to not a pixel coordinate, but rather the index from 0 to 19 across (x) or 0 to 11 up and down (y)
 get_map_index_at_cursor:   PROCEDURE 'translates upper-left coordinates of cursor to a map tile; estimates to closest if not exact match: e.g (17, 10) => 2, 1
+    DIM map_tile_x, map_tile_y, map_index
     'map_tile_x = ((cur_x(p)-8+4) - (cur_x(p)-8+4) % 8) / 8 '8 for card size in x dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
     map_tile_x = (cur_x(p)-4) / 8 'simplified from commented out expression in immediately preceding line
     'map_tile_y = ((p_cur_y-8+4) - (p_cur_y-8+4) % 8) / 8 '8 for card size in y dimension; 4 is half of 8; minus 8 is because p_cur_x and p_cur_y are upper left
@@ -131,10 +139,10 @@ get_cursor_backtab_overlaps:   PROCEDURE
     'the collision case being suboptimal isn't the worst thing
 
     'could also potentially optimize if a "parameter" is current cursor's form. if irrelvant type exit out of some logic sooner
-
     #cursor_backtab_overlaps = $0000
 
     '--- TOP LEFT CHECKS ---
+    DIM left_i, top_i, right_i, bottom_i, #card
     left_i = (cur_x(p) - 8) / 8       'cursor sprite's left edge index component
     top_i = 20 * ((cur_y(p) - 8) / 8) 'cursor sprite's top edge index component; needs to be multiplied by 20 to get correct row
 

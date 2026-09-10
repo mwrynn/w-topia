@@ -1,6 +1,7 @@
 'Game of W-Topia
 
-'OPTION EXPLICIT ON
+OPTION EXPLICIT ON
+
 'any procedure definitions in includes would get executed as any other code
 'so jump to main to get right into our program flow without surprises
 GOTO main
