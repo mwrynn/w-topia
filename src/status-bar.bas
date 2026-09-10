@@ -1,88 +1,43 @@
 'code pertaining to display bar; showing money, socre, etc.
 
-p1_get_should_show_vars:    PROCEDURE
-    GOSUB p1_setup_should_show_population
-    GOSUB should_show_population
-    GOSUB p1_finish_should_show_population
-
-    GOSUB p1_setup_should_show_score
-    GOSUB should_show_score
-    GOSUB p1_finish_should_show_score
-
-    GOSUB p1_setup_should_show_last_turns_score
-    GOSUB should_show_last_turns_score
-    GOSUB p1_finish_should_show_last_turns_score
+'PRECONDITIONS:
+    'p is set
+get_should_show_vars:    PROCEDURE
+    GOSUB get_should_show_population
+    GOSUB get_should_show_score
+    GOSUB get_should_show_last_turns_score
 END
 
-p2_get_should_show_vars:    PROCEDURE
-    GOSUB p2_setup_should_show_population
-    GOSUB should_show_population
-    GOSUB p2_finish_should_show_population
-
-    GOSUB p2_setup_should_show_score
-    GOSUB should_show_score
-    GOSUB p2_finish_should_show_score
-
-    GOSUB p2_setup_should_show_last_turns_score
-    GOSUB should_show_last_turns_score
-    GOSUB p2_finish_should_show_last_turns_score
+show_money:  PROCEDURE
+    PRINT AT screen_status_pos_begin(p) COLOR player_color(p),<.4>#money(p)
 END
 
-p1_show_money:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_money
+show_score:  PROCEDURE
+    PRINT AT screen_status_pos_begin(p) COLOR player_color(p),<.4>#score(p)
 END
 
-p1_show_score:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_score
+show_population: PROCEDURE
+    PRINT AT screen_status_pos_begin(p) COLOR player_color(p),<.4>#population(p)
 END
 
-p1_show_population: PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_population
+show_last_turns_score:  PROCEDURE
+    PRINT AT screen_status_pos_begin(p) COLOR player_color(p),<.4>#last_turns_score(p)
 END
-
-p1_show_last_turns_score:  PROCEDURE
-    PRINT AT SCREEN_P1_STATUS_POS_BEGIN COLOR p1_color,<.4>#p1_show_last_turns_score
-END
-
-p2_show_money:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_money
-END
-
-p2_show_score:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_score
-END
-
-p2_show_population: PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_population
-END
-
-p2_show_last_turns_score:  PROCEDURE
-    PRINT AT SCREEN_P2_STATUS_POS_BEGIN COLOR p2_color,<.4>#p2_show_last_turns_score
-END
-
+    
 update_status_bar:  PROCEDURE
-    GOSUB p1_get_should_show_vars
-    GOSUB p2_get_should_show_vars
+    FOR p = 0 to (N_PLAYERS-1)
+        GOSUB get_should_show_vars
 
-    IF p1_should_show_population THEN
-        GOSUB p1_show_population
-    ELSEIF p1_should_show_score THEN
-     	GOSUB p1_show_score
-    ELSEIF p1_should_show_last_turns_score THEN
-        GOSUB p1_show_last_turns_score
-    ELSE
-        GOSUB p1_show_money
-    END IF
-
-    IF p2_should_show_population THEN
-        GOSUB p2_show_population
-    ELSEIF p2_should_show_score THEN
-        GOSUB p2_show_score
-    ELSEIF p2_should_show_last_turns_score THEN
-        GOSUB p2_show_last_turns_score
-    ELSE
-        GOSUB p2_show_money
-    END IF
+        IF should_show_population(p) THEN
+            GOSUB show_population
+        ELSEIF should_show_score(p) THEN
+            GOSUB show_score
+        ELSEIF should_show_last_turns_score(p) THEN
+            GOSUB show_last_turns_score
+        ELSE
+            GOSUB show_money
+        END IF
+    NEXT p
 
     'show turns left, spaces on the left (support 3 digits)
     IF turns_left <> last_turns_left THEN
