@@ -73,14 +73,21 @@ map_ownership:
     DATA WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW
     DATA WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW,WW
 
+land_top_left:
+    DATA 41, 50
+
+land_horiz_len:
+    DATA 11, 9
+
+land_vert_len:
+    DATA 7, 7
+
 DIM map_ownership_result
 DIM get_boat_ownership_result
-DIM ret_has_building
+DIM ret_has_building_or_rebel
 DIM building_index
 DIM ret_is_dock_tile_occupied
 DIM map_index_to_set_boat_at
-
-'''
 
 'PROCEDURE get_map_index_at_cursor: gets the map tile that the cursor is most closely placed over
 'PRECONDITIONS:
@@ -105,9 +112,10 @@ get_map_index_at_cursor:   PROCEDURE 'translates upper-left coordinates of curso
 END
 
 'helper macros for the complex procedure get_cursor_backtab_overlaps below
-DEF FN card_is_land(#card) = (#card >= FIRST_LAND) AND (#card <= LAST_LAND)
-DEF FN is_fishing_boat(#card) = ((#card AND $FF00) = CARD_INDEX_FISHING_BOAT)  'selected card is fishing boat (as a card, not sprite, it is parked)
-DEF FN card_color_is_opponents(#card, p) = (#card AND $0007) = player_index_to_opponent_color(p)
+DEF FN card_is_land(card) = (card >= CARD_NUM_FIRST_LAND_OR_BUILDING_ON_LAND) AND (card <= CARD_NUM_LAST_LAND_OR_BUILDING_ON_LAND)
+DEF FN card_is_land_for_rebel_candidate(card) = (card >= CARD_NUM_FIRST_LAND_OR_BUILDING_ON_LAND) AND (card <= CARD_NUM_LAST_LAND_OR_BUILDING_ON_LAND) AND (card <> CARD_NUM_REBEL) AND (card <> CARD_NUM_FORT)
+DEF FN is_fishing_boat(card) = (card = CARD_NUM_FISHING_BOAT)  'selected card is fishing boat (as a card, not sprite, it is parked)
+DEF FN backtab_color_is_opponents(#backtab_data, p) = (#backtab_data AND $0007) = player_index_to_opponent_color(p)
 DEF FN get_collision_bits(#cursor_backtab_overlaps, i1, i2) = (#cursor_backtab_overlaps OR ((i1 + i2) * 4) OR $0002)  'set bit 1 and set collision index at bit 2-9
 
 
@@ -142,21 +150,21 @@ get_cursor_backtab_overlaps:   PROCEDURE
     #cursor_backtab_overlaps = $0000
 
     '--- TOP LEFT CHECKS ---
-    DIM left_i, top_i, right_i, bottom_i, #card
+    DIM left_i, top_i, right_i, bottom_i, check_card
     left_i = (cur_x(p) - 8) / 8       'cursor sprite's left edge index component
     top_i = 20 * ((cur_y(p) - 8) / 8) 'cursor sprite's top edge index component; needs to be multiplied by 20 to get correct row
 
     '--- content at top-left corner ---
-    #card = #BACKTAB(top_i + left_i)
+    check_card = (#BACKTAB(top_i + left_i) / 8) AND $00FF
 
     '--- land check ---
-    IF card_is_land(#card) THEN
+    IF card_is_land(check_card) THEN
         #cursor_backtab_overlaps = $0001 'set bit 0
     END IF
 
     '--- parked fishing boat check ---
-    IF is_fishing_boat(#card) THEN
-        IF (card_color_is_opponents(#card, p)) THEN ' combining this with above expression ANDed is slow due to apparent lack of short circuiting
+    IF is_fishing_boat(check_card) THEN
+        IF (backtab_color_is_opponents(#BACKTAB(top_i + left_i), p)) THEN ' combining this with above expression ANDed is slow due to apparent lack of short circuiting
             #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, top_i, left_i)
         END IF
     END IF
@@ -167,16 +175,16 @@ get_cursor_backtab_overlaps:   PROCEDURE
     'top_i already computed above in TOP LEFT CHECKS section
 
     '--- content at top-right corner ---
-    #card = #BACKTAB(top_i + right_i)
+    check_card = #BACKTAB(top_i + right_i)
 
     '--- land check ---
-    IF card_is_land(#card) THEN
+    IF card_is_land(check_card) THEN
         #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set first bit
     END IF
 
     '--- parked fishing boat check ---
-    IF is_fishing_boat(#card) THEN
-        IF (card_color_is_opponents(#card, p)) THEN 
+    IF is_fishing_boat(check_card) THEN
+        IF (backtab_color_is_opponents(#BACKTAB(top_i + right_i), p)) THEN 
             #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, top_i, right_i)
         END IF
     END IF
@@ -189,16 +197,16 @@ get_cursor_backtab_overlaps:   PROCEDURE
     bottom_i = 20 * ((cur_y(p) - 1) / 8) 'cursor sprite's bottom edge index component; needs to be multiplied by 20 to get correct row; simplified expr from 20 * ((p_cur_y - 8 + 7) / 8)
 
     '--- content at bottom-left corner ---
-    #card = #BACKTAB(bottom_i + left_i)
+    check_card = #BACKTAB(bottom_i + left_i)
 
     '--- land check ---
-    IF card_is_land(#card) THEN
+    IF card_is_land(check_card) THEN
         #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set bit 0
     END IF
 
     '--- parked fishing boat check ---
-    IF is_fishing_boat(#card) THEN
-        IF (card_color_is_opponents(#card, p)) THEN 
+    IF is_fishing_boat(check_card) THEN
+        IF (backtab_color_is_opponents(#BACKTAB(bottom_i + left_i), p)) THEN 
             #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, bottom_i, left_i)
         END IF
     END IF
@@ -207,16 +215,16 @@ get_cursor_backtab_overlaps:   PROCEDURE
     'already have bottom_i and right_i from above
 
     '--- content at bottom-left corner ---
-    #card = #BACKTAB(bottom_i + right_i)
+    check_card = #BACKTAB(bottom_i + right_i)
 
     '--- land check ---
-    IF card_is_land(#card) THEN
+    IF card_is_land(check_card) THEN
         #cursor_backtab_overlaps = #cursor_backtab_overlaps OR $0001 'set bit 0
     END IF
 
     '--- parked fishing boat check ---
-    IF is_fishing_boat(#card) THEN
-        IF (card_color_is_opponents(#card, p)) THEN 
+    IF is_fishing_boat(check_card) THEN
+        IF (backtab_color_is_opponents(#BACKTAB(bottom_i + right_i), p)) THEN 
              #cursor_backtab_overlaps = get_collision_bits(#cursor_backtab_overlaps, bottom_i, right_i)
         END IF
     END IF
@@ -281,12 +289,12 @@ set_building:   PROCEDURE
 
     'look back to the previous card and check if there is a building
     map_index = map_index - 1
-    GOSUB has_building
+    GOSUB has_building_or_rebel
 
     'put map_index back to where we want to set the new building
     map_index = map_index + 1
 
-    IF ret_has_building THEN 'previous card has a building
+    IF ret_has_building_or_rebel THEN 'previous card has a building
         'set the new building at map_index with background bit off
         #backtab(map_index) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + build_colors(building_index)) AND #NEGATE_COLOR_STACK_BG_SHIFT
     ELSE
@@ -296,31 +304,33 @@ set_building:   PROCEDURE
 
     DO
         map_index = map_index + 1
-        GOSUB has_building
+        GOSUB has_building_or_rebel
 
-        IF ret_has_building = 1 THEN
+        IF ret_has_building_or_rebel = 1 THEN
           #backtab(map_index) = #backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT
         END IF
-    LOOP WHILE ret_has_building = 1
+    LOOP WHILE ret_has_building_or_rebel = 1
 
     #backtab(map_index) = #backtab(map_index) OR #COLOR_STACK_BG_SHIFT
 END
 
 '''
 
-'PROCEDURE has_building: checks whether given tile has a building
+'PROCEDURE has_building_or_rebel: checks whether given tile has a building
 'PRECONDITIONS:
     'map_index is set
 'PARAMETERS
     'map_index: the backtab index for which to check for a building
 'RETURNS
-    'ret_has_building: 1 if a building was found at map_index, 0 if not found
-has_building:   PROCEDURE
-    IF (#backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT) >= (CARD_BASELINE + CARD_NUM_BUILD*CARD_MULT) THEN
-        ret_has_building = 1
+    'ret_has_building_or_rebel: 1 if a building was found at map_index, 0 if not found
+has_building_or_rebel:   PROCEDURE
+    PRINT AT 21 COLOR 7, <.3>((#backtab(map_index) / 8) AND $00FF)
+    IF (((#backtab(map_index) / 8) AND $00FF) >= CARD_NUM_FIRST_BUILDING) AND (((#backtab(map_index) / 8) AND $00FF) <= CARD_NUM_REBEL) THEN
+    'IF (#backtab(map_index) AND #NEGATE_COLOR_STACK_BG_SHIFT) >= (CARD_BASELINE + CARD_NUM_BUILD*CARD_MULT) THEN
+        ret_has_building_or_rebel = 1
         RETURN
     END IF
-    ret_has_building = 0
+    ret_has_building_or_rebel = 0
 END 
 
 'PROCEDURE is_dock_tile_occupied: checks whether the dock tile is already occupied by a boat
@@ -353,3 +363,52 @@ set_boat:   PROCEDURE
     #backtab(map_index_to_set_boat_at) = (CARD_BASELINE + (CARD_NUM_BUILD + building_index) * CARD_MULT + player_index_to_color(p)) AND #NEGATE_COLOR_STACK_BG_SHIFT
 END
 
+'find available space for rebel in opponent's land
+'uses reservoir sampling algorithm
+'PRECONDITION
+    'set other_p
+    '#backtab has been loaded with map
+'PARAMETERS
+'RETURNS:
+    'ret_select_rebel_index
+    'ret_select_rebel_index_destroyed_something
+select_rebel_index:   PROCEDURE
+    DIM n_valid_iterations, n_successes, rand_num
+    DIM ret_select_rebel_index, ret_select_rebel_index_destroyed_something
+    DIM selected_card
+
+    n_valid_iterations = 0
+    n_successes = 0
+
+    FOR i = 0 TO (land_vert_len(other_p)-1)
+        FOR j = land_top_left(other_p) TO (land_top_left(other_p) + (land_horiz_len(other_p)-1))
+            map_index = 20*i + j
+
+            check_card = (#backtab(map_index) / 8) AND $00FF
+            IF card_is_land_for_rebel_candidate(check_card) THEN 'rebel can wipe out buildings or empty, but not forts or rebels
+                'check if protected by FORT (TODO)
+                GOSUB get_map_ownership
+
+                IF map_ownership_result = other_p THEN
+                    'random number between 1 and number of iterations (RANDOM(x) produces between 0 and x-1 incl.)
+                    IF RANDOM(n_valid_iterations+1) = 0 THEN
+                        ret_select_rebel_index = map_index
+                        selected_card = check_card
+                        n_successes = n_successes + 1
+                    END IF
+                    n_valid_iterations = n_valid_iterations + 1
+                ELSE
+                    rand_num = rand_num
+                END IF
+            ELSE
+                rand_num = rand_num
+            END IF
+        NEXT j
+    NEXT i
+
+    IF (selected_card >= CARD_NUM_FIRST_NON_FORT_BUILDING) AND (selected_card <= CARD_NUM_LAST_REAL_BUILDING) THEN
+        ret_select_rebel_index_destroyed_something = 1
+    ELSE
+        ret_select_rebel_index_destroyed_something = 0
+    END IF
+END

@@ -82,7 +82,7 @@ play_sound_bong_ntsc:    PROCEDURE
 
     FOR i = 0 TO 60
         SOUND SOUND_CHANNEL_A,,0
-        WAIT
+        WAIT 
     NEXT i
 END
 
@@ -163,7 +163,7 @@ play_sound_click:   PROCEDURE
     END IF
 END
 
-play_sound_click_ntSc:   PROCEDURE
+play_sound_click_ntsc:   PROCEDURE
     FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
         SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10
         WAIT
@@ -175,6 +175,15 @@ END
 play_sound_click_pal:   PROCEDURE
     FOR i = 0 TO SOUND_PAL_DURATION_1_10TH_SEC * 5
         SOUND SOUND_CHANNEL_A, PAL_SOUND_TONE_F4, 10
+        WAIT
+    NEXT i
+
+    SOUND SOUND_CHANNEL_A,,0
+END
+
+play_sound_destroy:   PROCEDURE
+    FOR i = 0 TO SOUND_NTSC_DURATION_1_10TH_SEC * 5
+        SOUND SOUND_CHANNEL_A, NTSC_SOUND_TONE_F4, 10
         WAIT
     NEXT i
 

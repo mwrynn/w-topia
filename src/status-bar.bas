@@ -26,6 +26,7 @@ END
     
 update_status_bar:  PROCEDURE
     FOR p = 0 to (N_PLAYERS-1)
+        other_p = p XOR 1
         GOSUB get_should_show_vars
 
         IF should_show_population(p) THEN

@@ -28,8 +28,8 @@ init:   PROCEDURE
     DEFINE CARD_NUM_FISHING_BOAT_DEATH_ANIM, 5, fishing_boat_death_anim_bitmaps
     WAIT
 
-    DIM i 'for for loops
-    DIM p 'player index
+    DIM i, j 'for for loops
+    DIM p, other_p 'player index
 
     GOSUB init_player_colors
     GOSUB init_cursor

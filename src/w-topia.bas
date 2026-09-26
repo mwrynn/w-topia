@@ -62,6 +62,7 @@ game_loop:
 
     'move cursor logic
     FOR p = 0 TO (N_PLAYERS-1)
+        other_p = p XOR 1
         GOSUB move_cursor
         GOSUB get_side_button_state
         GOSUB get_num_key_press

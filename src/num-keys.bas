@@ -321,7 +321,16 @@ build:  PROCEDURE
             GOSUB invalid_key_press
         END IF
     ELSEIF registered_command(p) = KEY_REBEL THEN
-        p = p 'NOOP; try ASM NOP
+        GOSUB select_rebel_index
+        map_index = ret_select_rebel_index
+        '#money(p) = #money(p) - build_costs(building_index)
+
+        IF ret_select_rebel_index_destroyed_something THEN
+            GOSUB play_sound_destroy
+            'make destruction sound here
+        END IF
+
+        GOSUB set_building
     ELSEIF registered_command(p) = KEY_PT_BOAT OR registered_command(p) = KEY_FISHING_BOAT THEN
         GOSUB can_build_at_dock
 
@@ -361,8 +370,8 @@ can_build_at_cursor:    PROCEDURE
 
         IF map_ownership_result = p THEN
             'verify no building preexists at location
-            GOSUB has_building
-            IF NOT ret_has_building THEN
+            GOSUB has_building_or_rebel
+            IF NOT ret_has_building_or_rebel THEN
                 can_build_at_cursor_result = 1
                 RETURN
             END IF
